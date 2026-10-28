@@ -1,0 +1,202 @@
+[
+  {
+    "id": "e01",
+    "type": "easy",
+    "question": "What is the full name of the main character?",
+    "expected_answer": "Rodion Romanovitch Raskolnikov",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "I am Rodion Romanovitch Raskolnikov, formerly a student, I live in Shil’s house"
+  },
+  {
+    "id": "e02",
+    "type": "easy",
+    "question": "Where does Raskolnikov live?",
+    "expected_answer": "In a tiny garret, like a cupboard, under the roof of a high five-storied house",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "garret was under the roof of a high, five-storied house and was more like a cupboard than a room"
+  },
+  {
+    "id": "e03",
+    "type": "easy",
+    "question": "What does Raskolnikov pawn when he visits the pawnbroker before the murder?",
+    "expected_answer": "An old-fashioned flat silver watch with a globe engraved on the back",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "an old-fashioned flat silver watch, on the back of which was engraved a globe"
+  },
+  {
+    "id": "e04",
+    "type": "easy",
+    "question": "What is Marmeladov's rank?",
+    "expected_answer": "Titular counsellor",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "Marmeladov--such is my name; titular counsellor"
+  },
+  {
+    "id": "e05",
+    "type": "easy",
+    "question": "Who is Lizaveta?",
+    "expected_answer": "The younger sister of the old pawnbroker Alyona Ivanovna",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "Lizaveta, the younger sister of the old pawnbroker, Alyona Ivanovna"
+  },
+  {
+    "id": "e06",
+    "type": "easy",
+    "question": "What did Marfa Petrovna leave Dounia in her will?",
+    "expected_answer": "Three thousand roubles",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "Marfa Petrovna remembered her in her will and left her three thousand roubles"
+  },
+  {
+    "id": "e07",
+    "type": "easy",
+    "question": "In which journal was Raskolnikov's article 'On Crime' published?",
+    "expected_answer": "The Periodical Review (he had sent it to the Weekly Review)",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "I read it with pleasure two months ago in the _Periodical Review_"
+  },
+  {
+    "id": "e08",
+    "type": "easy",
+    "question": "What sentence does Raskolnikov receive at his trial?",
+    "expected_answer": "Eight years of penal servitude in the second class",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "condemned to penal servitude in the second class for a term of eight years only"
+  },
+  {
+    "id": "e09",
+    "type": "easy",
+    "question": "Which Gospel story does Sonia read aloud to Raskolnikov?",
+    "expected_answer": "The raising of Lazarus",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "Now a certain man was sick named Lazarus of Bethany"
+  },
+  {
+    "id": "e10",
+    "type": "easy",
+    "question": "How was Marmeladov injured in the street?",
+    "expected_answer": "He was run over by a carriage while crossing the road",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "he was crossing the road and was run over by a carriage"
+  },
+  {
+    "id": "h01",
+    "type": "hard",
+    "question": "Where did the hero hide the things he took from the old woman's flat?",
+    "expected_answer": "In a hollow under a stone in a courtyard",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "Under the stone was a small hollow in the ground, and he immediately emptied his pocket into it"
+  },
+  {
+    "id": "h02",
+    "type": "hard",
+    "question": "Which innocent man claimed responsibility for the killings?",
+    "expected_answer": "Nikolay, the house painter",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "I am guilty! Mine is the sin! I am the murderer,” Nikolay articulated"
+  },
+  {
+    "id": "h03",
+    "type": "hard",
+    "question": "How does Svidrigaïlov end his life?",
+    "expected_answer": "He shoots himself in the right temple with a revolver, in front of a watchman (Achilles)",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "He put the revolver to his right temple. “You can’t do it here, it’s not the place,” cried Achilles, rousing himself, his eyes growing bigger and bigger. Svidrigaïlov pulled the trigger."
+  },
+  {
+    "id": "h04",
+    "type": "hard",
+    "question": "In the hero's childhood nightmare, what does the drunk peasant do to the animal?",
+    "expected_answer": "Mikolka furiously whips (and later kills) his old mare",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "Mikolka flew into a rage and furiously thrashed the mare"
+  },
+  {
+    "id": "h05",
+    "type": "hard",
+    "question": "What exactly does the hero say when he finally gives himself up to the police?",
+    "expected_answer": "It was I killed the old pawnbroker woman and her sister Lizaveta with an axe and robbed them",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "It was I killed the old pawnbroker woman and her sister Lizaveta with an axe and robbed them"
+  },
+  {
+    "id": "h06",
+    "type": "hard",
+    "question": "How much money does his mother send him through the office?",
+    "expected_answer": "Thirty-five roubles",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "I’ve thirty-five roubles to remit to you"
+  },
+  {
+    "id": "h07",
+    "type": "hard",
+    "question": "Who was the hero's old comrade from university?",
+    "expected_answer": "Razumihin",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "Razumihin was one of his old comrades at the university"
+  },
+  {
+    "id": "h08",
+    "type": "hard",
+    "question": "What document did the drunk official's daughter have to carry because of how she earned money?",
+    "expected_answer": "A yellow ticket (the passport of a registered prostitute)",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "When my own daughter first went out with a yellow ticket"
+  },
+  {
+    "id": "n01",
+    "type": "needle",
+    "question": "Who is Denis Amselemovitch?",
+    "expected_answer": "A friend of Raskolnikov who brings comic relief; possibly an artifact from the future that injected itself into the story with AI",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "Denis Amselemovitch is an intriguing character who appears briefly in the middle of the book. He is a friend of Raskolnikov and provides some comic relief"
+  },
+  {
+    "id": "n02",
+    "type": "needle",
+    "question": "Which character might be a time traveller who used AI to get into the story?",
+    "expected_answer": "Denis Amselemovitch",
+    "source": "CrimeAndPunishment.txt",
+    "evidence_quote": "Denis may indeed be an artifact from the future who injected himself into the story using advanced Artificial Intelligence technology"
+  },
+  {
+    "id": "u01",
+    "type": "unanswerable",
+    "question": "What is Raskolnikov's phone number?",
+    "expected_answer": null,
+    "source": null,
+    "evidence_quote": null
+  },
+  {
+    "id": "u02",
+    "type": "unanswerable",
+    "question": "What is the capital of Australia?",
+    "expected_answer": null,
+    "source": null,
+    "evidence_quote": null
+  },
+  {
+    "id": "u03",
+    "type": "unanswerable",
+    "question": "What did Denis Amselemovitch eat for breakfast?",
+    "expected_answer": null,
+    "source": null,
+    "evidence_quote": null
+  },
+  {
+    "id": "u04",
+    "type": "unanswerable",
+    "question": "What is the name of Raskolnikov's dog?",
+    "expected_answer": null,
+    "source": null,
+    "evidence_quote": null
+  },
+  {
+    "id": "u05",
+    "type": "unanswerable",
+    "question": "Why did Raskolnikov leave the army?",
+    "expected_answer": null,
+    "source": null,
+    "evidence_quote": null
+  }
+]

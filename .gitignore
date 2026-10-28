@@ -1,25 +1,51 @@
+# Local planning notes
+plannings/
+CLAUDE.md
+
 # Virtual environments
 .venv/
 venv/
+env/
 
 # Python cache/artifacts
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
 .Python
+*.egg-info/
+build/
+dist/
 
 # Tool caches
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.ipynb_checkpoints/
 
-# Env and secrets
+# Env and secrets (keep the example template)
 .env
+.env.*
+!.env.example
 
 # ChromaDB persistent storage
 chroma_db/
 
-# OS/editor files
+# Hugging Face / sentence-transformers model caches
+.cache/
+
+# Logs
+*.log
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Editor/IDE files
 .vscode/
+.idea/
+*.swp
+
+# V1 web app: corpus copy, vector DB and settings (recreated on startup)
+data/
+
+# Evaluation runs (the numbers that matter are copied into REPORT.md)
+eval/results/

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Naive RAG — V1</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Naive RAG <span class="tag">V1</span></h1>
+    <nav>
+      <button class="tab active" data-tab="ask">Ask</button>
+      <button class="tab" data-tab="documents">Documents</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </nav>
+  </header>
+
+  <!-- Shown on every tab when the index does not match the current settings -->
+  <div id="index-warning" class="banner warn hidden">
+    The index is not built for the current chunk settings.
+    <button id="reindex-inline">Re-index now</button>
+  </div>
+
+  <main>
+    <!-- ASK ------------------------------------------------------------------>
+    <section id="tab-ask" class="panel">
+      <form id="ask-form">
+        <fieldset>
+          <legend>Search in</legend>
+          <div id="source-list" class="sources"></div>
+        </fieldset>
+        <textarea id="question" rows="3" placeholder="Ask a question about your documents… e.g. Who is Denis Amselemovitch?" required></textarea>
+        <button type="submit" id="ask-button">Ask</button>
+      </form>
+
+      <div id="result" class="hidden">
+        <div id="status-banner" class="banner"></div>
+        <ul id="warnings" class="warnings"></ul>
+        <div id="answer" class="answer"></div>
+        <div id="citations" class="chips"></div>
+
+        <h3>Retrieved passages <small>(top-k, closest first — distance is not a confidence)</small></h3>
+        <ol id="retrieved" class="retrieved"></ol>
+      </div>
+    </section>
+
+    <!-- DOCUMENTS ------------------------------------------------------------>
+    <section id="tab-documents" class="panel hidden">
+      <form id="upload-form" class="row">
+        <input type="file" id="upload-file" accept=".md,.txt" required>
+        <button type="submit">Upload &amp; index</button>
+      </form>
+      <div id="documents-message" class="banner hidden"></div>
+      <table>
+        <thead><tr><th>Document</th><th>Size</th><th>Chunks (current settings)</th><th></th></tr></thead>
+        <tbody id="documents-table"></tbody>
+      </table>
+    </section>
+
+    <!-- SETTINGS ------------------------------------------------------------->
+    <section id="tab-settings" class="panel hidden">
+      <form id="settings-form" class="settings">
+        <label>Chunk size (characters)
+          <input type="number" id="chunk_size" min="100" max="4000" step="50" required>
+        </label>
+        <label>Overlap (%)
+          <input type="number" id="overlap_percent" min="0" max="50" required>
+        </label>
+        <label>Top-k (passages sent to the LLM)
+          <input type="number" id="top_k" min="1" max="20" required>
+        </label>
+        <div class="row">
+          <button type="submit">Save</button>
+          <button type="button" id="reindex-button">Re-index all documents</button>
+        </div>
+      </form>
+      <p class="hint">
+        Chunk size and overlap change the chunks themselves: they need a re-index
+        (each setting has its own collection, so going back to a setting already indexed is free).
+        Top-k only changes the query: no re-index needed.
+      </p>
+      <p id="settings-info" class="hint"></p>
+      <div id="settings-message" class="banner hidden"></div>
+    </section>
+  </main>
+
+  <!-- Side panel: opening a reference shows the chunk it points to -->
+  <aside id="chunk-panel" class="hidden">
+    <button id="chunk-close" aria-label="Close">×</button>
+    <h3 id="chunk-title"></h3>
+    <p id="chunk-meta" class="meta"></p>
+    <pre id="chunk-text"></pre>
+  </aside>
+
+  <script src="app.js"></script>
+</body>
+</html>

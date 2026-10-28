@@ -68,6 +68,31 @@ python ask_norag_google.py
 python ask_rag_google.py
 ```
 
+### 3) V1 — Naive RAG web app
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Then open http://127.0.0.1:8000/
+
+- On first start, `docs/CrimeAndPunishment.txt` is copied into `data/docs/` and indexed (~20 s; the embedding model downloads the very first time).
+- **Ask** tab: choose the documents, ask a question, get the answer with its references. Click a reference to see the chunk it points to.
+- **Documents** tab: upload (`.md` / `.txt`) or delete documents.
+- **Settings** tab: chunk size, overlap and top-k. A chunk size or overlap change needs a **Re-index** (button in the UI); top-k does not.
+- Without `GOOGLE_API_KEY`, everything works except the LLM answer: `/api/ask` returns a clear `provider_error`.
+- Layout: `app/` (FastAPI backend), `web/` (plain HTML/JS UI), `eval/` (question set + retrieval eval), `data/` (runtime data, git-ignored), `REPORT.md` (team, decision log, known failures).
+
+### 4) Retrieval evaluation
+
+```bash
+python eval/run_eval.py                                # chunk 800, overlap 10%, hit@1/3/5 + MRR
+python eval/run_eval.py --chunk-size 500 --overlap 20  # compare another setting
+python eval/run_eval.py --llm                          # also run the LLM (about 25 API calls)
+```
+
+Results are printed and saved in `eval/results/`. Ground truth is a quote of the evidence (character span in the file), so numbers stay comparable when the chunk size changes.
+
 ## Notes
 
 - Both applications use the OpenAI SDK to interact with Google Gemini via Google's OpenAI-compatible endpoint.
