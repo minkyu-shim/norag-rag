@@ -28,7 +28,7 @@ h1 { font-size: 18px; margin: 0; }
 .tag { font-size: 12px; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
 
 nav { display: flex; gap: 4px; }
-.tab { background: none; border: 1px solid transparent; color: var(--muted); }
+.tab { border-color: var(--border); background: var(--surface); color: var(--text); }
 .tab.active { border-color: var(--border); color: var(--text); background: var(--bg); }
 
 main { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
@@ -38,7 +38,6 @@ button {
   border: 1px solid var(--accent); background: var(--accent); color: #fff;
 }
 button:disabled { opacity: .5; cursor: wait; }
-button.secondary, .tab { border-color: var(--border); background: var(--surface); color: var(--text); }
 button.danger { background: none; border-color: var(--err); color: var(--err); }
 
 textarea, input[type=number] {
@@ -102,5 +101,5 @@ th { font-size: 13px; color: var(--muted); font-weight: normal; }
     --cited: #1f2d3b;
   }
   button { color: #10202f; }
-  button.secondary, .tab, button.danger, #chunk-close { color: var(--text); }
+  .tab, button.danger, #chunk-close { color: var(--text); }
 }

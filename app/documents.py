@@ -69,7 +69,7 @@ def delete_document(name):
 
 # --- Indexing phase: document -> chunks -> embeddings -> vector DB ------------
 def index_document(name, settings):
-    collection = store.get_collection(settings.chunk_size, settings.overlap_percent)
+    collection = store.get_collection(settings)
 
     # Re-indexing a document: first remove its old chunks, so we never keep duplicates.
     collection.delete(where={"source": name})
@@ -103,6 +103,15 @@ def index_all(settings):
     return {path.name: index_document(path.name, settings) for path in list_document_paths()}
 
 
+def index_missing(settings, names=None):
+    # Index only the documents that have no chunks yet for these settings (all documents by default).
+    # Shared by the app startup and eval/run_eval.py, so both follow the same rule.
+    if names is None:
+        names = [path.name for path in list_document_paths()]
+    for name in names:
+        if not is_indexed(name, settings):
+            index_document(name, settings)
+
+
 def is_indexed(name, settings):
-    collection = store.get_collection(settings.chunk_size, settings.overlap_percent)
-    return store.count_chunks(collection, name) > 0
+    return store.has_chunks(store.get_collection(settings), name)

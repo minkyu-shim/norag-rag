@@ -38,6 +38,11 @@ function showBanner(element, text, kind) {
   element.className = `banner ${kind}`;
 }
 
+// Settings (index_ready) and documents (chunk counts) both change after an index/upload/delete.
+async function refresh() {
+  await Promise.all([loadSettings(), loadDocuments()]);
+}
+
 // --- Tabs --------------------------------------------------------------------
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
@@ -81,6 +86,7 @@ $("settings-form").addEventListener("submit", async (event) => {
 
 async function reindex() {
   const buttons = [$("reindex-button"), $("reindex-inline")];
+  const labels = buttons.map((b) => b.textContent);   // restored afterwards: the HTML stays the only source
   buttons.forEach((b) => { b.disabled = true; b.textContent = "Indexing…"; });
   try {
     const result = await api("POST", "/api/index");
@@ -89,23 +95,23 @@ async function reindex() {
   } catch (e) {
     showBanner($("settings-message"), e.message, "err");
   } finally {
-    buttons.forEach((b) => { b.disabled = false; });
-    $("reindex-button").textContent = "Re-index all documents";
-    $("reindex-inline").textContent = "Re-index now";
-    await loadSettings();
-    await loadDocuments();
+    buttons.forEach((b, i) => { b.disabled = false; b.textContent = labels[i]; });
+    await refresh();
   }
 }
 $("reindex-button").addEventListener("click", reindex);
 $("reindex-inline").addEventListener("click", reindex);
 
 // --- Documents ---------------------------------------------------------------
+function checkedSources() {
+  return [...document.querySelectorAll("#source-list input")].filter((i) => i.checked).map((i) => i.value);
+}
+
 async function loadDocuments() {
   const docs = await api("GET", "/api/documents");
 
   // Remember which sources were checked, so a refresh does not reset the user's choice.
-  const previouslyChecked = new Set(
-    [...document.querySelectorAll("#source-list input")].filter((i) => i.checked).map((i) => i.value));
+  const previouslyChecked = new Set(checkedSources());
   const firstLoad = document.querySelectorAll("#source-list input").length === 0;
 
   $("source-list").innerHTML = "";
@@ -137,8 +143,7 @@ async function deleteDocument(name) {
   } catch (e) {
     showBanner($("documents-message"), e.message, "err");
   }
-  loadDocuments();
-  loadSettings();
+  refresh();
 }
 
 $("upload-form").addEventListener("submit", async (event) => {
@@ -159,8 +164,7 @@ $("upload-form").addEventListener("submit", async (event) => {
   } finally {
     button.disabled = false;
   }
-  loadDocuments();
-  loadSettings();
+  refresh();
 });
 
 // --- Ask ---------------------------------------------------------------------
@@ -174,7 +178,7 @@ const STATUS_KIND = {
 
 $("ask-form").addEventListener("submit", async (event) => {
   event.preventDefault();
-  const sources = [...document.querySelectorAll("#source-list input")].filter((i) => i.checked).map((i) => i.value);
+  const sources = checkedSources();
   if (sources.length === 0) {
     showError("Select at least one document to search in.");
     return;
@@ -249,5 +253,4 @@ $("chunk-close").addEventListener("click", () => $("chunk-panel").classList.add(
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("chunk-panel").classList.add("hidden"); });
 
 // --- Start -------------------------------------------------------------------
-loadSettings().catch((e) => showError(e.message));
-loadDocuments().catch((e) => showError(e.message));
+refresh().catch((e) => showError(e.message));

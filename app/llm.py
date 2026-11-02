@@ -1,5 +1,4 @@
 import openai
-from openai import OpenAI
 from pydantic import ValidationError
 from app.config import (
     GOOGLE_API_KEY, LLM_BASE_URL, MODEL, LLM_TIMEOUT_SECONDS, LLM_INVALID_OUTPUT_RETRIES,
@@ -17,8 +16,7 @@ from app.schemas import LLMAnswer
 
 class ProviderError(Exception):
     def __init__(self, message, http_status):
-        super().__init__(message)
-        self.message = message
+        super().__init__(message)       # the message is read back with str(e)
         self.http_status = http_status
 
 
@@ -31,7 +29,7 @@ class InvalidOutputError(Exception):
 if GOOGLE_API_KEY:
     # max_retries=0: the SDK would otherwise silently retry 2 times on 429/5xx.
     # We prefer to tell the user right away, and keep the number of calls predictable.
-    client = OpenAI(
+    client = openai.OpenAI(
         api_key=GOOGLE_API_KEY,
         base_url=LLM_BASE_URL,
         timeout=LLM_TIMEOUT_SECONDS,

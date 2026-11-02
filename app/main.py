@@ -23,10 +23,7 @@ async def lifespan(app):
     # First start: copy the book into data/docs/ and index what is not indexed yet,
     # so the app is usable right away (takes ~20s for Crime and Punishment).
     documents.seed_corpus()
-    settings = load_settings()
-    for path in documents.list_document_paths():
-        if not documents.is_indexed(path.name, settings):
-            documents.index_document(path.name, settings)
+    documents.index_missing(load_settings())
     yield
 
 
@@ -39,7 +36,7 @@ def settings_response(settings):
     return SettingsResponse(
         **settings.model_dump(),
         index_ready=ready,
-        collection=store.collection_name(settings.chunk_size, settings.overlap_percent),
+        collection=store.collection_name(settings),
     )
 
 
@@ -66,7 +63,7 @@ def reindex():
 @app.get("/api/documents", response_model=list[DocumentInfo])
 def list_documents():
     settings = load_settings()
-    collection = store.get_collection(settings.chunk_size, settings.overlap_percent)
+    collection = store.get_collection(settings)
     return [
         DocumentInfo(name=p.name, size_bytes=p.stat().st_size, chunks=store.count_chunks(collection, p.name))
         for p in documents.list_document_paths()

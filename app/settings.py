@@ -22,7 +22,7 @@ def load_settings():
         return default_settings()
     try:
         return Settings.model_validate_json(SETTINGS_FILE.read_text(encoding="utf-8"))
-    except (ValidationError, ValueError):
+    except ValidationError:     # also raised by Pydantic when the file is not valid JSON
         # A broken settings file must not break the app: fall back to the defaults.
         print(f"WARNING: {SETTINGS_FILE} is invalid, using default settings.")
         return default_settings()

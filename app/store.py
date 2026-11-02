@@ -21,13 +21,15 @@ embedding_function = SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_M
 chroma_client = chromadb.PersistentClient(path=str(CHROMA_DIR))
 
 
-def collection_name(chunk_size, overlap_percent):
-    return f"chunks_{chunk_size}_{overlap_percent}"
+# Callers pass the whole Settings object: the rule "which settings pick the collection"
+# lives only here. (top_k is ignored on purpose: it does not change the chunks.)
+def collection_name(settings):
+    return f"chunks_{settings.chunk_size}_{settings.overlap_percent}"
 
 
-def get_collection(chunk_size, overlap_percent):
+def get_collection(settings):
     return chroma_client.get_or_create_collection(
-        name=collection_name(chunk_size, overlap_percent),
+        name=collection_name(settings),
         embedding_function=embedding_function,
         # Cosine distance: 0 = same direction, 2 = opposite. Easier to read than the default (L2).
         metadata={"hnsw:space": "cosine"},
@@ -43,3 +45,8 @@ def all_collections():
 
 def count_chunks(collection, source):
     return len(collection.get(where={"source": source}, include=[])["ids"])
+
+
+def has_chunks(collection, source):
+    # Yes/no question: fetching one id is enough, no need to load all of them like count_chunks.
+    return len(collection.get(where={"source": source}, limit=1, include=[])["ids"]) > 0

@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app import documents, rag, llm  # noqa: E402
+from app.config import DEFAULT_CHUNK_SIZE, DEFAULT_OVERLAP_PERCENT  # noqa: E402
 from app.schemas import Settings  # noqa: E402
 
 # Retrieval baseline: how often is the RIGHT PASSAGE in the top-k?
@@ -55,8 +56,9 @@ def first_hit_rank(retrieved, source, span):
 
 def main():
     parser = argparse.ArgumentParser(description="Retrieval baseline (hit rate @ k)")
-    parser.add_argument("--chunk-size", type=int, default=800)
-    parser.add_argument("--overlap", type=int, default=10)
+    # Same defaults as the app (app/config.py), so a plain run measures what the app uses.
+    parser.add_argument("--chunk-size", type=int, default=DEFAULT_CHUNK_SIZE)
+    parser.add_argument("--overlap", type=int, default=DEFAULT_OVERLAP_PERCENT)
     parser.add_argument("--k", default="1,3,5", help="comma-separated list of k values")
     parser.add_argument("--llm", action="store_true", help="also run the full pipeline with the LLM")
     args = parser.parse_args()
@@ -74,9 +76,7 @@ def main():
     # Make sure every source document is indexed with THIS setting (same code as the app).
     documents.seed_corpus()
     sources = sorted({q["source"] for q in questions if q["source"]})
-    for source in sources:
-        if not documents.is_indexed(source, settings):
-            documents.index_document(source, settings)
+    documents.index_missing(settings, sources)
     texts = {source: documents.read_document(source) for source in sources}
 
     rows = []
@@ -98,7 +98,8 @@ def main():
             row["rank"] = first_hit_rank(retrieved, q["source"], span)
 
         if args.llm:
-            response, _ = rag.answer(q["question"], search_in, settings)
+            # Reuse the chunks retrieved above: no second retrieval, and the LLM sees what was measured.
+            response, _ = rag.answer_from_chunks(q["question"], retrieved)
             row["llm_status"] = response.status
             row["llm_answer"] = response.answer
             if q["evidence_quote"]:

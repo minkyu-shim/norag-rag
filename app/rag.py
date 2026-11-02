@@ -15,7 +15,7 @@ class NotReadyError(Exception):
 
 # --- Retrieval ---------------------------------------------------------------
 def retrieve(question, sources, settings):
-    collection = store.get_collection(settings.chunk_size, settings.overlap_percent)
+    collection = store.get_collection(settings)
 
     # Metadata filter: only search in the documents the user selected.
     results = collection.query(
@@ -96,12 +96,16 @@ def normalize_label(label):
 def answer(question, sources, settings):
     """Returns (AskResponse, http_status)."""
     check_ready(sources, settings)
-    retrieved = retrieve(question, sources, settings)
+    return answer_from_chunks(question, retrieve(question, sources, settings))
 
+
+def answer_from_chunks(question, retrieved):
+    # The LLM + verification half of answer(). eval/run_eval.py calls it directly with the chunks
+    # it already retrieved, so the LLM sees exactly the chunks that were measured.
     try:
         llm_answer = ask_llm_for_answer(build_prompt(question, retrieved))
     except ProviderError as e:
-        return AskResponse(status="provider_error", message=e.message, retrieved=retrieved), e.http_status
+        return AskResponse(status="provider_error", message=str(e), retrieved=retrieved), e.http_status
     except InvalidOutputError:
         return AskResponse(
             status="invalid_output",
@@ -121,28 +125,18 @@ def answer(question, sources, settings):
             citations.append(chunk)
 
     if not llm_answer.found:
-        return AskResponse(
-            status="not_found",
-            message="The selected documents do not seem to contain the answer.",
-            answer=llm_answer.answer,
-            retrieved=retrieved,
-            warnings=warnings,
-        ), 200
-
-    if not citations:
-        return AskResponse(
-            status="unverified",
-            message="The LLM gave an answer but cited no retrieved passage: it may not come from your documents.",
-            answer=llm_answer.answer,
-            retrieved=retrieved,
-            warnings=warnings,
-        ), 200
+        status, message = "not_found", "The selected documents do not seem to contain the answer."
+    elif not citations:
+        status, message = "unverified", "The LLM gave an answer but cited no retrieved passage: it may not come from your documents."
+    else:
+        status, message = "answered", "Answer built from the cited passages."
 
     return AskResponse(
-        status="answered",
-        message="Answer built from the cited passages.",
+        status=status,
+        message=message,
         answer=llm_answer.answer,
-        citations=citations,
+        # Citations are only shown with a real answer, not with "not found".
+        citations=citations if status == "answered" else [],
         retrieved=retrieved,
         warnings=warnings,
     ), 200
