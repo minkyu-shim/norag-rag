@@ -1,0 +1,970 @@
+{
+  "settings": {
+    "chunk_size": 800,
+    "overlap_percent": 10,
+    "ks": [
+      1,
+      3,
+      5
+    ],
+    "min_coverage": 0.5,
+    "llm": false
+  },
+  "summary": {
+    "ALL answerable": {
+      "n": 20,
+      "hit@1": 0.15,
+      "hit@3": 0.25,
+      "hit@5": 0.25,
+      "mrr": 0.2
+    },
+    "easy": {
+      "n": 10,
+      "hit@1": 0.2,
+      "hit@3": 0.3,
+      "hit@5": 0.3,
+      "mrr": 0.25
+    },
+    "hard": {
+      "n": 8,
+      "hit@1": 0.0,
+      "hit@3": 0.125,
+      "hit@5": 0.125,
+      "mrr": 0.062
+    },
+    "needle": {
+      "n": 2,
+      "hit@1": 0.5,
+      "hit@3": 0.5,
+      "hit@5": 0.5,
+      "mrr": 0.5
+    }
+  },
+  "questions": [
+    {
+      "id": "e01",
+      "type": "easy",
+      "question": "What is the full name of the main character?",
+      "top1_distance": 0.7061,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::188",
+          "lines": "2367-2386",
+          "distance": 0.7061
+        },
+        {
+          "id": "CrimeAndPunishment.txt::352",
+          "lines": "4652-4666",
+          "distance": 0.7066
+        },
+        {
+          "id": "CrimeAndPunishment.txt::573",
+          "lines": "7953-7968",
+          "distance": 0.7102
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1012",
+          "lines": "14391-14408",
+          "distance": 0.7186
+        },
+        {
+          "id": "CrimeAndPunishment.txt::520",
+          "lines": "7191-7208",
+          "distance": 0.7192
+        }
+      ],
+      "evidence_span": [
+        372537,
+        372616
+      ],
+      "rank": null
+    },
+    {
+      "id": "e02",
+      "type": "easy",
+      "question": "Where does Raskolnikov live?",
+      "top1_distance": 0.3783,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::811",
+          "lines": "11393-11416",
+          "distance": 0.3783
+        },
+        {
+          "id": "CrimeAndPunishment.txt::468",
+          "lines": "6358-6384",
+          "distance": 0.3893
+        },
+        {
+          "id": "CrimeAndPunishment.txt::796",
+          "lines": "11220-11235",
+          "distance": 0.3903
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1257",
+          "lines": "17799-17810",
+          "distance": 0.3932
+        },
+        {
+          "id": "CrimeAndPunishment.txt::794",
+          "lines": "11195-11209",
+          "distance": 0.3933
+        }
+      ],
+      "evidence_span": [
+        5750,
+        5846
+      ],
+      "rank": null
+    },
+    {
+      "id": "e03",
+      "type": "easy",
+      "question": "What does Raskolnikov pawn when he visits the pawnbroker before the murder?",
+      "top1_distance": 0.3338,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::201",
+          "lines": "2551-2563",
+          "distance": 0.3338
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1533",
+          "lines": "21559-21572",
+          "distance": 0.3365
+        },
+        {
+          "id": "CrimeAndPunishment.txt::793",
+          "lines": "11179-11196",
+          "distance": 0.377
+        },
+        {
+          "id": "CrimeAndPunishment.txt::792",
+          "lines": "11159-11181",
+          "distance": 0.3819
+        },
+        {
+          "id": "CrimeAndPunishment.txt::490",
+          "lines": "6718-6738",
+          "distance": 0.3938
+        }
+      ],
+      "evidence_span": [
+        17137,
+        17214
+      ],
+      "rank": null
+    },
+    {
+      "id": "e04",
+      "type": "easy",
+      "question": "What is Marmeladov's rank?",
+      "top1_distance": 0.6008,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::38",
+          "lines": "539-553",
+          "distance": 0.6008
+        },
+        {
+          "id": "CrimeAndPunishment.txt::83",
+          "lines": "1063-1079",
+          "distance": 0.6291
+        },
+        {
+          "id": "CrimeAndPunishment.txt::524",
+          "lines": "7251-7265",
+          "distance": 0.6699
+        },
+        {
+          "id": "CrimeAndPunishment.txt::68",
+          "lines": "880-891",
+          "distance": 0.6771
+        },
+        {
+          "id": "CrimeAndPunishment.txt::41",
+          "lines": "576-590",
+          "distance": 0.6798
+        }
+      ],
+      "evidence_span": [
+        27398,
+        27445
+      ],
+      "rank": 1
+    },
+    {
+      "id": "e05",
+      "type": "easy",
+      "question": "Who is Lizaveta?",
+      "top1_distance": 0.324,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::206",
+          "lines": "2610-2624",
+          "distance": 0.324
+        },
+        {
+          "id": "CrimeAndPunishment.txt::205",
+          "lines": "2600-2611",
+          "distance": 0.4064
+        },
+        {
+          "id": "CrimeAndPunishment.txt::200",
+          "lines": "2536-2553",
+          "distance": 0.5073
+        },
+        {
+          "id": "CrimeAndPunishment.txt::940",
+          "lines": "13385-13410",
+          "distance": 0.5215
+        },
+        {
+          "id": "CrimeAndPunishment.txt::204",
+          "lines": "2586-2601",
+          "distance": 0.5244
+        }
+      ],
+      "evidence_span": [
+        141161,
+        141228
+      ],
+      "rank": null
+    },
+    {
+      "id": "e06",
+      "type": "easy",
+      "question": "What did Marfa Petrovna leave Dounia in her will?",
+      "top1_distance": 0.2754,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::102",
+          "lines": "1332-1343",
+          "distance": 0.2754
+        },
+        {
+          "id": "CrimeAndPunishment.txt::110",
+          "lines": "1414-1425",
+          "distance": 0.2797
+        },
+        {
+          "id": "CrimeAndPunishment.txt::109",
+          "lines": "1404-1415",
+          "distance": 0.2945
+        },
+        {
+          "id": "CrimeAndPunishment.txt::106",
+          "lines": "1373-1385",
+          "distance": 0.312
+        },
+        {
+          "id": "CrimeAndPunishment.txt::108",
+          "lines": "1394-1405",
+          "distance": 0.3229
+        }
+      ],
+      "evidence_span": [
+        611501,
+        611578
+      ],
+      "rank": null
+    },
+    {
+      "id": "e07",
+      "type": "easy",
+      "question": "In which journal was Raskolnikov's article 'On Crime' published?",
+      "top1_distance": 0.3311,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::1532",
+          "lines": "21548-21560",
+          "distance": 0.3311
+        },
+        {
+          "id": "CrimeAndPunishment.txt::751",
+          "lines": "10555-10575",
+          "distance": 0.3452
+        },
+        {
+          "id": "CrimeAndPunishment.txt::753",
+          "lines": "10591-10609",
+          "distance": 0.3474
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1533",
+          "lines": "21559-21572",
+          "distance": 0.3788
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1529",
+          "lines": "21506-21529",
+          "distance": 0.3844
+        }
+      ],
+      "evidence_span": [
+        541087,
+        541152
+      ],
+      "rank": 2
+    },
+    {
+      "id": "e08",
+      "type": "easy",
+      "question": "What sentence does Raskolnikov receive at his trial?",
+      "top1_distance": 0.2361,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::1536",
+          "lines": "21593-21608",
+          "distance": 0.2361
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1529",
+          "lines": "21506-21529",
+          "distance": 0.2767
+        },
+        {
+          "id": "CrimeAndPunishment.txt::957",
+          "lines": "13666-13677",
+          "distance": 0.3138
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1533",
+          "lines": "21559-21572",
+          "distance": 0.3156
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1532",
+          "lines": "21548-21560",
+          "distance": 0.3208
+        }
+      ],
+      "evidence_span": [
+        1106486,
+        1106565
+      ],
+      "rank": 1
+    },
+    {
+      "id": "e09",
+      "type": "easy",
+      "question": "Which Gospel story does Sonia read aloud to Raskolnikov?",
+      "top1_distance": 0.3182,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::944",
+          "lines": "13457-13478",
+          "distance": 0.3182
+        },
+        {
+          "id": "CrimeAndPunishment.txt::939",
+          "lines": "13359-13388",
+          "distance": 0.3383
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1563",
+          "lines": "21921-21934",
+          "distance": 0.3483
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1261",
+          "lines": "17846-17859",
+          "distance": 0.3676
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1262",
+          "lines": "17858-17870",
+          "distance": 0.3709
+        }
+      ],
+      "evidence_span": [
+        677886,
+        677937
+      ],
+      "rank": null
+    },
+    {
+      "id": "e10",
+      "type": "easy",
+      "question": "How was Marmeladov injured in the street?",
+      "top1_distance": 0.4812,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::83",
+          "lines": "1063-1079",
+          "distance": 0.4812
+        },
+        {
+          "id": "CrimeAndPunishment.txt::525",
+          "lines": "7264-7279",
+          "distance": 0.484
+        },
+        {
+          "id": "CrimeAndPunishment.txt::524",
+          "lines": "7251-7265",
+          "distance": 0.4853
+        },
+        {
+          "id": "CrimeAndPunishment.txt::41",
+          "lines": "576-590",
+          "distance": 0.5495
+        },
+        {
+          "id": "CrimeAndPunishment.txt::522",
+          "lines": "7219-7235",
+          "distance": 0.555
+        }
+      ],
+      "evidence_span": [
+        382720,
+        382775
+      ],
+      "rank": null
+    },
+    {
+      "id": "h01",
+      "type": "hard",
+      "question": "Where did the hero hide the things he took from the old woman's flat?",
+      "top1_distance": 0.4698,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::23",
+          "lines": "326-345",
+          "distance": 0.4698
+        },
+        {
+          "id": "CrimeAndPunishment.txt::249",
+          "lines": "3171-3182",
+          "distance": 0.4931
+        },
+        {
+          "id": "CrimeAndPunishment.txt::278",
+          "lines": "3585-3598",
+          "distance": 0.5065
+        },
+        {
+          "id": "CrimeAndPunishment.txt::327",
+          "lines": "4329-4342",
+          "distance": 0.512
+        },
+        {
+          "id": "CrimeAndPunishment.txt::250",
+          "lines": "3181-3194",
+          "distance": 0.5136
+        }
+      ],
+      "evidence_span": [
+        240242,
+        240337
+      ],
+      "rank": null
+    },
+    {
+      "id": "h02",
+      "type": "hard",
+      "question": "Which innocent man claimed responsibility for the killings?",
+      "top1_distance": 0.5102,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::1534",
+          "lines": "21571-21584",
+          "distance": 0.5102
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1558",
+          "lines": "21857-21871",
+          "distance": 0.5144
+        },
+        {
+          "id": "CrimeAndPunishment.txt::757",
+          "lines": "10645-10656",
+          "distance": 0.5396
+        },
+        {
+          "id": "CrimeAndPunishment.txt::425",
+          "lines": "5715-5728",
+          "distance": 0.546
+        },
+        {
+          "id": "CrimeAndPunishment.txt::793",
+          "lines": "11179-11196",
+          "distance": 0.5545
+        }
+      ],
+      "evidence_span": [
+        729868,
+        729937
+      ],
+      "rank": null
+    },
+    {
+      "id": "h03",
+      "type": "hard",
+      "question": "How does Svidrigaïlov end his life?",
+      "top1_distance": 0.3181,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::1257",
+          "lines": "17799-17810",
+          "distance": 0.3181
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1525",
+          "lines": "21428-21454",
+          "distance": 0.3612
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1329",
+          "lines": "18762-18776",
+          "distance": 0.3998
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1256",
+          "lines": "17787-17800",
+          "distance": 0.4181
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1459",
+          "lines": "20510-20523",
+          "distance": 0.4426
+        }
+      ],
+      "evidence_span": [
+        1060110,
+        1060298
+      ],
+      "rank": null
+    },
+    {
+      "id": "h04",
+      "type": "hard",
+      "question": "In the hero's childhood nightmare, what does the drunk peasant do to the animal?",
+      "top1_distance": 0.4022,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::179",
+          "lines": "2224-2243",
+          "distance": 0.4022
+        },
+        {
+          "id": "CrimeAndPunishment.txt::178",
+          "lines": "2214-2226",
+          "distance": 0.5027
+        },
+        {
+          "id": "CrimeAndPunishment.txt::189",
+          "lines": "2385-2403",
+          "distance": 0.5079
+        },
+        {
+          "id": "CrimeAndPunishment.txt::13",
+          "lines": "206-217",
+          "distance": 0.5193
+        },
+        {
+          "id": "CrimeAndPunishment.txt::522",
+          "lines": "7219-7235",
+          "distance": 0.5249
+        }
+      ],
+      "evidence_span": [
+        131204,
+        131260
+      ],
+      "rank": null
+    },
+    {
+      "id": "h05",
+      "type": "hard",
+      "question": "What exactly does the hero say when he finally gives himself up to the police?",
+      "top1_distance": 0.4886,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::157",
+          "lines": "1947-1966",
+          "distance": 0.4886
+        },
+        {
+          "id": "CrimeAndPunishment.txt::416",
+          "lines": "5603-5614",
+          "distance": 0.4913
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1029",
+          "lines": "14682-14707",
+          "distance": 0.5039
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1240",
+          "lines": "17531-17546",
+          "distance": 0.5067
+        },
+        {
+          "id": "CrimeAndPunishment.txt::288",
+          "lines": "3752-3769",
+          "distance": 0.5092
+        }
+      ],
+      "evidence_span": [
+        1100840,
+        1100932
+      ],
+      "rank": null
+    },
+    {
+      "id": "h06",
+      "type": "hard",
+      "question": "How much money does his mother send him through the office?",
+      "top1_distance": 0.6346,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::125",
+          "lines": "1569-1581",
+          "distance": 0.6346
+        },
+        {
+          "id": "CrimeAndPunishment.txt::126",
+          "lines": "1580-1591",
+          "distance": 0.6463
+        },
+        {
+          "id": "CrimeAndPunishment.txt::135",
+          "lines": "1687-1699",
+          "distance": 0.6709
+        },
+        {
+          "id": "CrimeAndPunishment.txt::134",
+          "lines": "1677-1688",
+          "distance": 0.6742
+        },
+        {
+          "id": "CrimeAndPunishment.txt::136",
+          "lines": "1698-1710",
+          "distance": 0.6921
+        }
+      ],
+      "evidence_span": [
+        262481,
+        262521
+      ],
+      "rank": null
+    },
+    {
+      "id": "h07",
+      "type": "hard",
+      "question": "Who was the hero's old comrade from university?",
+      "top1_distance": 0.5494,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::890",
+          "lines": "12580-12591",
+          "distance": 0.5494
+        },
+        {
+          "id": "CrimeAndPunishment.txt::164",
+          "lines": "2050-2064",
+          "distance": 0.5829
+        },
+        {
+          "id": "CrimeAndPunishment.txt::39",
+          "lines": "552-565",
+          "distance": 0.6043
+        },
+        {
+          "id": "CrimeAndPunishment.txt::101",
+          "lines": "1322-1333",
+          "distance": 0.606
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1513",
+          "lines": "21261-21282",
+          "distance": 0.6086
+        }
+      ],
+      "evidence_span": [
+        118438,
+        118493
+      ],
+      "rank": 2
+    },
+    {
+      "id": "h08",
+      "type": "hard",
+      "question": "What document did the drunk official's daughter have to carry because of how she earned money?",
+      "top1_distance": 0.616,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::208",
+          "lines": "2637-2652",
+          "distance": 0.616
+        },
+        {
+          "id": "CrimeAndPunishment.txt::55",
+          "lines": "737-748",
+          "distance": 0.6282
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1531",
+          "lines": "21538-21549",
+          "distance": 0.6362
+        },
+        {
+          "id": "CrimeAndPunishment.txt::302",
+          "lines": "3963-3981",
+          "distance": 0.642
+        },
+        {
+          "id": "CrimeAndPunishment.txt::154",
+          "lines": "1906-1922",
+          "distance": 0.647
+        }
+      ],
+      "evidence_span": [
+        32006,
+        32062
+      ],
+      "rank": null
+    },
+    {
+      "id": "n01",
+      "type": "needle",
+      "question": "Who is Denis Amselemovitch?",
+      "top1_distance": 0.4143,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::1024",
+          "lines": "14600-14614",
+          "distance": 0.4143
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1025",
+          "lines": "14613-14631",
+          "distance": 0.5199
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1044",
+          "lines": "14883-14896",
+          "distance": 0.5261
+        },
+        {
+          "id": "CrimeAndPunishment.txt::311",
+          "lines": "4085-4100",
+          "distance": 0.5448
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1308",
+          "lines": "18461-18480",
+          "distance": 0.5692
+        }
+      ],
+      "evidence_span": [
+        737908,
+        738063
+      ],
+      "rank": 1
+    },
+    {
+      "id": "n02",
+      "type": "needle",
+      "question": "Which character might be a time traveller who used AI to get into the story?",
+      "top1_distance": 0.6072,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::202",
+          "lines": "2562-2575",
+          "distance": 0.6072
+        },
+        {
+          "id": "CrimeAndPunishment.txt::233",
+          "lines": "2962-2976",
+          "distance": 0.6106
+        },
+        {
+          "id": "CrimeAndPunishment.txt::211",
+          "lines": "2684-2699",
+          "distance": 0.611
+        },
+        {
+          "id": "CrimeAndPunishment.txt::351",
+          "lines": "4641-4653",
+          "distance": 0.6129
+        },
+        {
+          "id": "CrimeAndPunishment.txt::328",
+          "lines": "4341-4354",
+          "distance": 0.618
+        }
+      ],
+      "evidence_span": [
+        738132,
+        738266
+      ],
+      "rank": null
+    },
+    {
+      "id": "u01",
+      "type": "unanswerable",
+      "question": "What is Raskolnikov's phone number?",
+      "top1_distance": 0.4449,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::201",
+          "lines": "2551-2563",
+          "distance": 0.4449
+        },
+        {
+          "id": "CrimeAndPunishment.txt::811",
+          "lines": "11393-11416",
+          "distance": 0.4464
+        },
+        {
+          "id": "CrimeAndPunishment.txt::517",
+          "lines": "7128-7151",
+          "distance": 0.4561
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1390",
+          "lines": "19563-19581",
+          "distance": 0.4731
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1257",
+          "lines": "17799-17810",
+          "distance": 0.4734
+        }
+      ]
+    },
+    {
+      "id": "u02",
+      "type": "unanswerable",
+      "question": "What is the capital of Australia?",
+      "top1_distance": 0.8067,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::53",
+          "lines": "717-728",
+          "distance": 0.8067
+        },
+        {
+          "id": "CrimeAndPunishment.txt::964",
+          "lines": "13752-13767",
+          "distance": 0.8629
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1339",
+          "lines": "18897-18912",
+          "distance": 0.8642
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1423",
+          "lines": "20028-20047",
+          "distance": 0.8705
+        },
+        {
+          "id": "CrimeAndPunishment.txt::444",
+          "lines": "5990-6010",
+          "distance": 0.8737
+        }
+      ]
+    },
+    {
+      "id": "u03",
+      "type": "unanswerable",
+      "question": "What did Denis Amselemovitch eat for breakfast?",
+      "top1_distance": 0.473,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::1024",
+          "lines": "14600-14614",
+          "distance": 0.473
+        },
+        {
+          "id": "CrimeAndPunishment.txt::401",
+          "lines": "5382-5401",
+          "distance": 0.5651
+        },
+        {
+          "id": "CrimeAndPunishment.txt::296",
+          "lines": "3874-3890",
+          "distance": 0.5691
+        },
+        {
+          "id": "CrimeAndPunishment.txt::440",
+          "lines": "5928-5942",
+          "distance": 0.5699
+        },
+        {
+          "id": "CrimeAndPunishment.txt::993",
+          "lines": "14103-14118",
+          "distance": 0.5709
+        }
+      ]
+    },
+    {
+      "id": "u04",
+      "type": "unanswerable",
+      "question": "What is the name of Raskolnikov's dog?",
+      "top1_distance": 0.3814,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::1452",
+          "lines": "20428-20441",
+          "distance": 0.3814
+        },
+        {
+          "id": "CrimeAndPunishment.txt::811",
+          "lines": "11393-11416",
+          "distance": 0.3927
+        },
+        {
+          "id": "CrimeAndPunishment.txt::433",
+          "lines": "5826-5844",
+          "distance": 0.4051
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1257",
+          "lines": "17799-17810",
+          "distance": 0.4097
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1525",
+          "lines": "21428-21454",
+          "distance": 0.4146
+        }
+      ]
+    },
+    {
+      "id": "u05",
+      "type": "unanswerable",
+      "question": "Why did Raskolnikov leave the army?",
+      "top1_distance": 0.2973,
+      "retrieved": [
+        {
+          "id": "CrimeAndPunishment.txt::1515",
+          "lines": "21292-21306",
+          "distance": 0.2973
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1561",
+          "lines": "21894-21906",
+          "distance": 0.3007
+        },
+        {
+          "id": "CrimeAndPunishment.txt::167",
+          "lines": "2085-2096",
+          "distance": 0.3633
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1257",
+          "lines": "17799-17810",
+          "distance": 0.3674
+        },
+        {
+          "id": "CrimeAndPunishment.txt::1536",
+          "lines": "21593-21608",
+          "distance": 0.3715
+        }
+      ]
+    }
+  ]
+}

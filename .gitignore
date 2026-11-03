@@ -47,8 +47,7 @@ Thumbs.db
 # V1 web app: corpus copy, vector DB and settings (recreated on startup)
 data/
 
-# Evaluation runs (the numbers that matter are copied into REPORT.md)
-eval/results/
+# Evaluation runs: NOT ignored since V2, the results files (with the hand grades) are a deliverable.
 
 # Claude Code local config (launch.json, settings.local.json)
 .claude/
