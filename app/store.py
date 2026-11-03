@@ -4,10 +4,12 @@ from app.config import CHROMA_DIR, EMBEDDING_MODEL
 
 # The vector DB: ChromaDB, stored on disk in data/chroma/ (same library as ask_rag_google.py).
 #
-# One collection per chunking setting. The collection name says how its chunks were made:
-#   chunk_size=800, overlap=10%  ->  "chunks_800_10"
+# One collection per (corpus, chunking setting). The collection name says what it holds:
+#   corpus=kestrel, chunk_size=800, overlap=10%  ->  "kestrel_chunks_800_10"
 #
-# Why? Chunk size and overlap change the chunks themselves, so the old embeddings are useless
+# Why the corpus? Two corpora must never answer for each other: a Kestrel question must not
+# retrieve a Crime and Punishment chunk. Separate collections make that impossible by design.
+# Why the setting? Chunk size and overlap change the chunks themselves, so the old embeddings are useless
 # for the new setting: everything must be re-indexed. Keeping one collection per setting means
 #   - we never mix chunks made with different settings by mistake,
 #   - switching back to a setting already indexed costs nothing,
@@ -23,24 +25,30 @@ chroma_client = chromadb.PersistentClient(path=str(CHROMA_DIR))
 
 # Callers pass the whole Settings object: the rule "which settings pick the collection"
 # lives only here. (top_k is ignored on purpose: it does not change the chunks.)
-def collection_name(settings):
-    return f"chunks_{settings.chunk_size}_{settings.overlap_percent}"
+def collection_prefix(corpus):
+    return f"{corpus}_chunks_"
 
 
-def get_collection(settings):
+def collection_name(corpus, settings):
+    return f"{collection_prefix(corpus)}{settings.chunk_size}_{settings.overlap_percent}"
+
+
+def get_collection(corpus, settings):
     return chroma_client.get_or_create_collection(
-        name=collection_name(settings),
+        name=collection_name(corpus, settings),
         embedding_function=embedding_function,
         # Cosine distance: 0 = same direction, 2 = opposite. Easier to read than the default (L2).
         metadata={"hnsw:space": "cosine"},
     )
 
 
-def all_collections():
-    # Used when deleting a document: its chunks must disappear from EVERY setting's collection.
+def all_collections(corpus):
+    # Used when deleting a document: its chunks must disappear from EVERY setting's collection
+    # of its corpus (and only of its corpus: another corpus may have a file with the same name).
     # (Depending on the chromadb version, list_collections() returns names or Collection objects.)
     names = [getattr(c, "name", c) for c in chroma_client.list_collections()]
-    return [chroma_client.get_collection(name=n, embedding_function=embedding_function) for n in names]
+    return [chroma_client.get_collection(name=n, embedding_function=embedding_function)
+            for n in names if n.startswith(collection_prefix(corpus))]
 
 
 def count_chunks(collection, source):

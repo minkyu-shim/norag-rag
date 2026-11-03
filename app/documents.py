@@ -1,12 +1,13 @@
 import shutil
 from pathlib import Path
-from app.config import DOCS_DIR, SEED_DOCUMENT, ALLOWED_EXTENSIONS
+from app.config import CORPORA_DIR, CORPORA, ALLOWED_EXTENSIONS
 from app.chunking import chunk_text
 from app import store
 
-# Document management: the corpus is simply the folder data/docs/, one file per document.
-# The file name is the document id (it is stored as "source" in the chunk metadata,
+# Document management: each corpus is simply a folder data/corpora/<corpus>/, one file per document.
+# The file name is the document id inside its corpus (it is stored as "source" in the chunk metadata,
 # which is what lets the user choose which documents a question is asked against).
+# Every function takes the corpus first: there is no "current corpus" hidden on the server.
 
 # Chroma refuses too large batches in one add(): we send the chunks by groups.
 ADD_BATCH_SIZE = 1000
@@ -16,20 +17,34 @@ class DocumentError(Exception):
     """A problem with a document that the user caused and can fix (wrong type, empty file...)."""
 
 
-def seed_corpus():
-    # First start: data/docs/ is empty, so we copy the book in.
-    DOCS_DIR.mkdir(parents=True, exist_ok=True)
-    if not any(DOCS_DIR.iterdir()) and SEED_DOCUMENT.exists():
-        shutil.copy(SEED_DOCUMENT, DOCS_DIR / SEED_DOCUMENT.name)
-        print(f"Seeded the corpus with {SEED_DOCUMENT.name}")
+def corpus_dir(corpus):
+    # The corpus name ends up in a path and in a collection name: only the known ones are accepted.
+    if corpus not in CORPORA:
+        raise DocumentError(f"Unknown corpus {corpus!r}. Known: {', '.join(CORPORA)}")
+    return CORPORA_DIR / corpus
 
 
-def list_document_paths():
-    return sorted(p for p in DOCS_DIR.iterdir() if p.suffix.lower() in ALLOWED_EXTENSIONS)
+def seed_corpus(corpus):
+    # First start: the corpus folder is empty, so we copy its seed files in.
+    folder = corpus_dir(corpus)
+    folder.mkdir(parents=True, exist_ok=True)
+    if not any(folder.iterdir()):
+        for seed in CORPORA[corpus]:
+            shutil.copy(seed, folder / seed.name)
+            print(f"Seeded corpus {corpus!r} with {seed.name}")
 
 
-def read_document(name):
-    return (DOCS_DIR / name).read_text(encoding="utf-8")
+def seed_all():
+    for corpus in CORPORA:
+        seed_corpus(corpus)
+
+
+def list_document_paths(corpus):
+    return sorted(p for p in corpus_dir(corpus).iterdir() if p.suffix.lower() in ALLOWED_EXTENSIONS)
+
+
+def read_document(corpus, name):
+    return (corpus_dir(corpus) / name).read_text(encoding="utf-8")
 
 
 def check_name(name):
@@ -41,10 +56,11 @@ def check_name(name):
         raise DocumentError(f"Unsupported file type for {name!r}. Allowed: {allowed}")
 
 
-def save_document(name, content_bytes):
+def save_document(corpus, name, content_bytes):
     check_name(name)
-    if (DOCS_DIR / name).exists():
-        raise DocumentError(f"A document named {name!r} already exists. Delete it first.")
+    path = corpus_dir(corpus) / name
+    if path.exists():
+        raise DocumentError(f"A document named {name!r} already exists in {corpus!r}. Delete it first.")
     try:
         text = content_bytes.decode("utf-8")
     except UnicodeDecodeError:
@@ -52,29 +68,29 @@ def save_document(name, content_bytes):
     if not text.strip():
         raise DocumentError(f"{name!r} is empty.")
 
-    (DOCS_DIR / name).write_text(text, encoding="utf-8")
+    path.write_text(text, encoding="utf-8")
 
 
-def delete_document(name):
+def delete_document(corpus, name):
     check_name(name)
-    path = DOCS_DIR / name
+    path = corpus_dir(corpus) / name
     if not path.exists():
-        raise DocumentError(f"No document named {name!r}.")
+        raise DocumentError(f"No document named {name!r} in {corpus!r}.")
     path.unlink()
-    # Remove its chunks from EVERY collection, not only the current settings' one,
+    # Remove its chunks from EVERY collection of the corpus, not only the current settings' one,
     # otherwise a deleted document would come back when switching settings.
-    for collection in store.all_collections():
+    for collection in store.all_collections(corpus):
         collection.delete(where={"source": name})
 
 
 # --- Indexing phase: document -> chunks -> embeddings -> vector DB ------------
-def index_document(name, settings):
-    collection = store.get_collection(settings)
+def index_document(corpus, name, settings):
+    collection = store.get_collection(corpus, settings)
 
     # Re-indexing a document: first remove its old chunks, so we never keep duplicates.
     collection.delete(where={"source": name})
 
-    chunks = chunk_text(read_document(name), settings.chunk_size, settings.overlap_percent)
+    chunks = chunk_text(read_document(corpus, name), settings.chunk_size, settings.overlap_percent)
 
     # Chroma computes the embeddings itself (with store.embedding_function) when we add documents.
     for batch_start in range(0, len(chunks), ADD_BATCH_SIZE):
@@ -95,23 +111,23 @@ def index_document(name, settings):
                 for i, c in enumerate(batch)
             ],
         )
-    print(f"Indexed {name}: {len(chunks)} chunks into {collection.name}")
+    print(f"Indexed {corpus}/{name}: {len(chunks)} chunks into {collection.name}")
     return len(chunks)
 
 
-def index_all(settings):
-    return {path.name: index_document(path.name, settings) for path in list_document_paths()}
+def index_all(corpus, settings):
+    return {path.name: index_document(corpus, path.name, settings) for path in list_document_paths(corpus)}
 
 
-def index_missing(settings, names=None):
+def index_missing(corpus, settings, names=None):
     # Index only the documents that have no chunks yet for these settings (all documents by default).
     # Shared by the app startup and eval/run_eval.py, so both follow the same rule.
     if names is None:
-        names = [path.name for path in list_document_paths()]
+        names = [path.name for path in list_document_paths(corpus)]
     for name in names:
-        if not is_indexed(name, settings):
-            index_document(name, settings)
+        if not is_indexed(corpus, name, settings):
+            index_document(corpus, name, settings)
 
 
-def is_indexed(name, settings):
-    return store.has_chunks(store.get_collection(settings), name)
+def is_indexed(corpus, name, settings):
+    return store.has_chunks(store.get_collection(corpus, settings), name)

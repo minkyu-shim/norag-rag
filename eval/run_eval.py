@@ -27,6 +27,9 @@ from app.schemas import Settings  # noqa: E402
 # Retrieval only (default) = no LLM call: free, fast and deterministic, so you can re-run it at will.
 
 QUESTIONS_FILE = Path(__file__).resolve().parent / "questions.json"
+# These questions are about Crime and Punishment, so they run against the "crime" corpus.
+# (A --corpus / --questions pair comes with the Kestrel question set.)
+CORPUS = "crime"
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
 MIN_COVERAGE = 0.5
 LLM_DELAY_SECONDS = 4.5   # stay under the free-tier rate limit (~15 requests/minute)
@@ -74,16 +77,16 @@ def main():
     questions = json.loads(QUESTIONS_FILE.read_text(encoding="utf-8"))
 
     # Make sure every source document is indexed with THIS setting (same code as the app).
-    documents.seed_corpus()
+    documents.seed_corpus(CORPUS)
     sources = sorted({q["source"] for q in questions if q["source"]})
-    documents.index_missing(settings, sources)
-    texts = {source: documents.read_document(source) for source in sources}
+    documents.index_missing(CORPUS, settings, sources)
+    texts = {source: documents.read_document(CORPUS, source) for source in sources}
 
     rows = []
     for q in questions:
         # Unanswerable questions are searched in every source document.
         search_in = [q["source"]] if q["source"] else sources
-        retrieved = rag.retrieve(q["question"], search_in, settings)
+        retrieved = rag.retrieve(CORPUS, q["question"], search_in, settings)
         row = {
             "id": q["id"],
             "type": q["type"],

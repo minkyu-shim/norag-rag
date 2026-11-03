@@ -1,7 +1,11 @@
-// Plain JavaScript UI for the V1 API (no framework, no build step).
+// Plain JavaScript UI for the V2 API (no framework, no build step).
 // Every call goes through api(), which turns an HTTP error into a readable message.
 
 const $ = (id) => document.getElementById(id);
+
+// The corpus picked in the header. Every API call is about ONE corpus, so it goes in every call.
+const corpus = () => $("corpus").value;
+const withCorpus = (path) => `${path}${path.includes("?") ? "&" : "?"}corpus=${encodeURIComponent(corpus())}`;
 
 async function api(method, path, body) {
   const options = { method, headers: {} };
@@ -43,6 +47,29 @@ async function refresh() {
   await Promise.all([loadSettings(), loadDocuments()]);
 }
 
+// --- Corpus ------------------------------------------------------------------
+async function loadCorpora() {
+  const names = await api("GET", "/api/corpora");
+  // Remember the last corpus in this browser only (a convenience: the server keeps no "current corpus").
+  let saved = null;
+  try { saved = localStorage.getItem("corpus"); } catch { /* storage blocked: start on the first corpus */ }
+  for (const name of names) {
+    const option = document.createElement("option");
+    option.value = option.textContent = name;
+    $("corpus").append(option);
+  }
+  if (names.includes(saved)) $("corpus").value = saved;
+}
+
+$("corpus").addEventListener("change", () => {
+  try { localStorage.setItem("corpus", corpus()); } catch { /* not critical */ }
+  // The documents and the last answer belong to the old corpus: start clean.
+  $("source-list").innerHTML = "";
+  $("result").classList.add("hidden");
+  ["documents-message", "settings-message"].forEach((id) => $(id).classList.add("hidden"));
+  refresh().catch((e) => showError(e.message));
+});
+
 // --- Tabs --------------------------------------------------------------------
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
@@ -54,7 +81,9 @@ document.querySelectorAll(".tab").forEach((tab) => {
 
 // --- Settings ----------------------------------------------------------------
 async function loadSettings() {
-  const s = await api("GET", "/api/settings");
+  const asked = corpus();
+  const s = await api("GET", withCorpus("/api/settings"));
+  if (asked !== corpus()) return;   // the user switched corpus meanwhile: this answer is stale
   $("chunk_size").value = s.chunk_size;
   $("overlap_percent").value = s.overlap_percent;
   $("top_k").value = s.top_k;
@@ -64,13 +93,13 @@ async function loadSettings() {
 function showSettingsState(s) {
   $("index-warning").classList.toggle("hidden", s.index_ready);
   $("settings-info").textContent =
-    `Current collection: ${s.collection} — ${s.index_ready ? "index ready" : "index NOT built"}.`;
+    `Corpus ${s.corpus} — collection ${s.collection} — ${s.index_ready ? "index ready" : "index NOT built"}.`;
 }
 
 $("settings-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   try {
-    const s = await api("PUT", "/api/settings", {
+    const s = await api("PUT", withCorpus("/api/settings"), {
       chunk_size: Number($("chunk_size").value),
       overlap_percent: Number($("overlap_percent").value),
       top_k: Number($("top_k").value),
@@ -89,9 +118,9 @@ async function reindex() {
   const labels = buttons.map((b) => b.textContent);   // restored afterwards: the HTML stays the only source
   buttons.forEach((b) => { b.disabled = true; b.textContent = "Indexing…"; });
   try {
-    const result = await api("POST", "/api/index");
+    const result = await api("POST", withCorpus("/api/index"));
     const total = Object.values(result.indexed).reduce((a, b) => a + b, 0);
-    showBanner($("settings-message"), `Indexed ${total} chunks.`, "ok");
+    showBanner($("settings-message"), `Indexed ${total} chunks in ${result.corpus}.`, "ok");
   } catch (e) {
     showBanner($("settings-message"), e.message, "err");
   } finally {
@@ -108,7 +137,9 @@ function checkedSources() {
 }
 
 async function loadDocuments() {
-  const docs = await api("GET", "/api/documents");
+  const asked = corpus();
+  const docs = await api("GET", withCorpus("/api/documents"));
+  if (asked !== corpus()) return;   // the user switched corpus meanwhile: this answer is stale
 
   // Remember which sources were checked, so a refresh does not reset the user's choice.
   const previouslyChecked = new Set(checkedSources());
@@ -132,13 +163,13 @@ async function loadDocuments() {
     row.querySelector("button").addEventListener("click", () => deleteDocument(doc.name));
     $("documents-table").append(row);
   }
-  if (docs.length === 0) $("source-list").textContent = "No documents yet: upload one in the Documents tab.";
+  if (docs.length === 0) $("source-list").textContent = "No documents in this corpus yet: upload one in the Documents tab.";
 }
 
 async function deleteDocument(name) {
-  if (!confirm(`Delete ${name} and all its chunks?`)) return;
+  if (!confirm(`Delete ${name} from ${corpus()} and all its chunks?`)) return;
   try {
-    await api("DELETE", `/api/documents/${encodeURIComponent(name)}`);
+    await api("DELETE", withCorpus(`/api/documents/${encodeURIComponent(name)}`));
     showBanner($("documents-message"), `Deleted ${name}.`, "ok");
   } catch (e) {
     showBanner($("documents-message"), e.message, "err");
@@ -154,10 +185,10 @@ $("upload-form").addEventListener("submit", async (event) => {
   form.append("file", file);
   const button = event.submitter;
   button.disabled = true;
-  showBanner($("documents-message"), `Uploading and indexing ${file.name}…`, "");
+  showBanner($("documents-message"), `Uploading and indexing ${file.name} into ${corpus()}…`, "");
   try {
-    const result = await api("POST", "/api/documents", form);
-    showBanner($("documents-message"), `${result.name}: ${result.chunks} chunks indexed.`, "ok");
+    const result = await api("POST", withCorpus("/api/documents"), form);
+    showBanner($("documents-message"), `${result.corpus}/${result.name}: ${result.chunks} chunks indexed.`, "ok");
     $("upload-form").reset();
   } catch (e) {
     showBanner($("documents-message"), e.message, "err");
@@ -187,7 +218,7 @@ $("ask-form").addEventListener("submit", async (event) => {
   $("ask-button").disabled = true;
   $("ask-button").textContent = "Thinking…";
   try {
-    showResult(await api("POST", "/api/ask", { question: $("question").value, sources }));
+    showResult(await api("POST", "/api/ask", { corpus: corpus(), question: $("question").value, sources }));
   } catch (e) {
     showError(e.message);
   } finally {
@@ -253,4 +284,5 @@ $("chunk-close").addEventListener("click", () => $("chunk-panel").classList.add(
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("chunk-panel").classList.add("hidden"); });
 
 // --- Start -------------------------------------------------------------------
-refresh().catch((e) => showError(e.message));
+// The corpus list comes first: every other call needs a corpus.
+loadCorpora().then(refresh).catch((e) => showError(e.message));

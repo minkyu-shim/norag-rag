@@ -14,8 +14,8 @@ class NotReadyError(Exception):
 
 
 # --- Retrieval ---------------------------------------------------------------
-def retrieve(question, sources, settings):
-    collection = store.get_collection(settings)
+def retrieve(corpus, question, sources, settings):
+    collection = store.get_collection(corpus, settings)
 
     # Metadata filter: only search in the documents the user selected.
     results = collection.query(
@@ -74,13 +74,13 @@ QUESTION:
 
 
 # --- The whole answering phase ------------------------------------------------
-def check_ready(sources, settings):
-    existing = {p.name for p in documents.list_document_paths()}
+def check_ready(corpus, sources, settings):
+    existing = {p.name for p in documents.list_document_paths(corpus)}
     unknown = [s for s in sources if s not in existing]
     if unknown:
-        raise NotReadyError(f"Unknown document(s): {', '.join(unknown)}")
+        raise NotReadyError(f"Unknown document(s) in corpus {corpus!r}: {', '.join(unknown)}")
 
-    not_indexed = [s for s in sources if not documents.is_indexed(s, settings)]
+    not_indexed = [s for s in sources if not documents.is_indexed(corpus, s, settings)]
     if not_indexed:
         raise NotReadyError(
             f"Not indexed for chunk size {settings.chunk_size} / overlap {settings.overlap_percent}%: "
@@ -93,10 +93,10 @@ def normalize_label(label):
     return label.strip().strip("[]").upper()
 
 
-def answer(question, sources, settings):
+def answer(corpus, question, sources, settings):
     """Returns (AskResponse, http_status)."""
-    check_ready(sources, settings)
-    return answer_from_chunks(question, retrieve(question, sources, settings))
+    check_ready(corpus, sources, settings)
+    return answer_from_chunks(question, retrieve(corpus, question, sources, settings))
 
 
 def answer_from_chunks(question, retrieved):

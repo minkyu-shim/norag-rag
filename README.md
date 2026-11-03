@@ -76,7 +76,7 @@ uvicorn app.main:app --reload
 
 Then open http://127.0.0.1:8000/
 
-- On first start, `docs/CrimeAndPunishment.txt` is copied into `data/docs/` and indexed (~20 s; the embedding model downloads the very first time).
+- The app has two corpora, picked in the header: `crime` (our own) and `kestrel` (the course's knowledge base). On first start, their seed files (`docs/CrimeAndPunishment.txt` and `docs/kestrel/*.md`) are copied into `data/corpora/<corpus>/` and indexed (~20 s for the book; the embedding model downloads the very first time).
 - **Ask** tab: choose the documents, ask a question, get the answer with its references. Click a reference to see the chunk it points to.
 - **Documents** tab: upload (`.md` / `.txt`) or delete documents.
 - **Settings** tab: chunk size, overlap and top-k. A chunk size or overlap change needs a **Re-index** (button in the UI); top-k does not.

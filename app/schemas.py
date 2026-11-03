@@ -1,9 +1,14 @@
 from typing import Literal
 from pydantic import BaseModel, Field
+from app.config import CORPORA
 
 # Every piece of data that crosses a boundary (UI <-> API, LLM -> API) has a Pydantic schema.
 # FastAPI uses them to validate requests, and we use LLMAnswer to validate what the LLM returns
 # BEFORE it reaches the UI: an LLM answer that does not match the schema is never shown as an answer.
+
+# The corpus names, built from app/config.py so the list lives in one place.
+# Literal["crime", "kestrel"]: an unknown corpus is a 422 from FastAPI, before our code runs.
+CorpusName = Literal[tuple(CORPORA)]
 
 
 # --- Settings the user can change from the UI ---------------------------------
@@ -14,7 +19,9 @@ class Settings(BaseModel):
 
 
 class SettingsResponse(Settings):
-    # False when no index exists yet for this (chunk_size, overlap): the user must re-index.
+    # The settings are shared by all corpora, but the index is not: these fields are for ONE corpus.
+    corpus: str
+    # False when no index exists yet for this (corpus, chunk_size, overlap): the user must re-index.
     index_ready: bool
     collection: str
 
@@ -30,8 +37,10 @@ class LLMAnswer(BaseModel):
 
 # --- Ask ---------------------------------------------------------------------
 class AskRequest(BaseModel):
+    # Required, no default: a question sent to the wrong corpus would fail silently ("not found").
+    corpus: CorpusName
     question: str = Field(min_length=1, max_length=2000)
-    # Names of the documents to search in (metadata filter on "source").
+    # Names of the documents to search in, inside that corpus (metadata filter on "source").
     sources: list[str] = Field(min_length=1)
 
 

@@ -3,12 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Naive RAG — V1</title>
+  <title>Naive RAG — V2</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>Naive RAG <span class="tag">V1</span></h1>
+    <h1>Naive RAG <span class="tag">V2</span></h1>
+    <!-- Every tab works on the corpus chosen here (the API needs it on every call) -->
+    <label class="corpus-picker">Corpus
+      <select id="corpus"></select>
+    </label>
     <nav>
       <button class="tab active" data-tab="ask">Ask</button>
       <button class="tab" data-tab="documents">Documents</button>
@@ -18,7 +22,7 @@
 
   <!-- Shown on every tab when the index does not match the current settings -->
   <div id="index-warning" class="banner warn hidden">
-    The index is not built for the current chunk settings.
+    The index of this corpus is not built for the current chunk settings.
     <button id="reindex-inline">Re-index now</button>
   </div>
 
@@ -30,7 +34,7 @@
           <legend>Search in</legend>
           <div id="source-list" class="sources"></div>
         </fieldset>
-        <textarea id="question" rows="3" placeholder="Ask a question about your documents… e.g. Who is Denis Amselemovitch?" required></textarea>
+        <textarea id="question" rows="3" placeholder="Ask a question about the documents of this corpus…" required></textarea>
         <button type="submit" id="ask-button">Ask</button>
       </form>
 
@@ -72,11 +76,12 @@
         </label>
         <div class="row">
           <button type="submit">Save</button>
-          <button type="button" id="reindex-button">Re-index all documents</button>
+          <button type="button" id="reindex-button">Re-index this corpus</button>
         </div>
       </form>
       <p class="hint">
-        Chunk size and overlap change the chunks themselves: they need a re-index
+        The settings are shared by all corpora, but each corpus has its own index.
+        Chunk size and overlap change the chunks themselves: they need a re-index of each corpus
         (each setting has its own collection, so going back to a setting already indexed is free).
         Top-k only changes the query: no re-index needed.
       </p>

@@ -12,13 +12,24 @@ load_dotenv()
 # Every path is built from the repo root, so the app works whatever the current directory is.
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
-DOCS_DIR = DATA_DIR / "docs"          # the corpus: one .md/.txt file per document
+CORPORA_DIR = DATA_DIR / "corpora"    # one sub-folder per corpus, one .md/.txt file per document
 CHROMA_DIR = DATA_DIR / "chroma"      # the vector DB (separate from ./chroma_db used by the scripts)
 SETTINGS_FILE = DATA_DIR / "settings.json"
 WEB_DIR = ROOT_DIR / "web"
 
-# On first start, data/docs/ is empty: we copy this file in, so the app has a corpus to work with.
-SEED_DOCUMENT = ROOT_DIR / "docs" / "CrimeAndPunishment.txt"
+# --- Corpora -----------------------------------------------------------------
+# V2: the app works on several corpora, kept fully apart (own folder, own Chroma collections).
+# A question is always asked against ONE corpus, so the numbers of two corpora never mix.
+#
+# Each corpus has seed files: on first start, data/corpora/<name>/ is empty and we copy them in,
+# so the app has something to work with. After that, the Documents tab manages the folder.
+#   - crime:   Crime and Punishment, with the Denis Amselemovitch needle (our own corpus)
+#   - kestrel: the Kestrel Analytics knowledge base given in the course (fictional company)
+CORPORA = {
+    "crime": [ROOT_DIR / "docs" / "CrimeAndPunishment.txt"],
+    "kestrel": sorted((ROOT_DIR / "docs" / "kestrel").glob("*.md")),
+}
+DEFAULT_CORPUS = "crime"
 
 # --- Documents ---------------------------------------------------------------
 ALLOWED_EXTENSIONS = {".md", ".txt"}
