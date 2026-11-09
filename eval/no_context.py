@@ -15,6 +15,7 @@ from app.config import MODEL  # noqa: E402
 #
 #   python eval/no_context.py kestrel      # reads eval/questions_kestrel.jsonl
 #   python eval/no_context.py crime        # reads eval/questions_crime.jsonl
+#   python eval/no_context.py crime --retry-errors   # only re-ask the questions whose call failed
 #
 # If the model answers a question correctly with no excerpt at all, that question tests the model's
 # training, not our RAG ("a RAG that answers questions the model already knew proves nothing").
@@ -65,14 +66,33 @@ def ask(prompt):
             return None, "invalid_output"
 
 
+def retry_errors(out, topic):
+    data = json.loads(out.read_text(encoding="utf-8"))
+    for row in data["questions"]:
+        if not row["error"]:
+            continue
+        answer, error = ask(build_prompt(topic, row["question"]))
+        row.update(model_answer=answer.answer if answer else None,
+                   model_says_known=answer.found if answer else None, error=error)
+        print(f"{row['id']:4} {'ERROR ' + error if error else 'ok'} {(answer.answer if answer else '')[:100]!r}")
+        # Saved after every question: a later failure does not lose the answers already received.
+        out.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        time.sleep(LLM_DELAY_SECONDS)
+
+
 def main():
     parser = argparse.ArgumentParser(description="No-context test: the questions without retrieval")
     parser.add_argument("corpus", choices=sorted(TOPICS))
     parser.add_argument("--force", action="store_true", help="overwrite the results file (loses your marks)")
+    parser.add_argument("--retry-errors", action="store_true",
+                        help="keep the saved answers, only re-ask the questions that failed (503, 429...)")
     args = parser.parse_args()
 
     questions_file = EVAL_DIR / f"questions_{args.corpus}.jsonl"
     out = EVAL_DIR / f"no_context_{args.corpus}.json"
+    if args.retry_errors:
+        retry_errors(out, TOPICS[args.corpus])
+        return
     if out.exists() and not args.force:
         raise SystemExit(f"{out.name} already exists (it may hold your marks). Use --force to overwrite it.")
     if llm.client is None:

@@ -1,0 +1,283 @@
+{
+  "corpus": "crime",
+  "model": "gemini-3.1-flash-lite",
+  "date": "2026-11-03 11:23",
+  "topic_given": "the novel Crime and Punishment by Fyodor Dostoevsky",
+  "questions": [
+    {
+      "id": "e01",
+      "type": "other",
+      "answerable": true,
+      "question": "What is the full name of the main character?",
+      "expected_answer": "Rodion Romanovitch Raskolnikov",
+      "model_answer": "The full name of the main character in Crime and Punishment is Rodion Romanovich Raskolnikov.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "e02",
+      "type": "other",
+      "answerable": true,
+      "question": "Where does Raskolnikov live?",
+      "expected_answer": "In a tiny garret, like a cupboard, under the roof of a high five-storied house",
+      "model_answer": "Raskolnikov lives in a tiny, cramped garret room located in a tenement building in St. Petersburg, which is often described as resembling a cupboard or a coffin.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "e03",
+      "type": "other",
+      "answerable": true,
+      "question": "What does Raskolnikov pawn when he visits the pawnbroker before the murder?",
+      "expected_answer": "An old-fashioned flat silver watch with a globe engraved on the back",
+      "model_answer": "Raskolnikov pawns a small, silver cigarette case to the pawnbroker, Alyona Ivanovna, during his preliminary visit to her apartment.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "e04",
+      "type": "other",
+      "answerable": true,
+      "question": "What is Marmeladov's rank?",
+      "expected_answer": "Titular counsellor",
+      "model_answer": "Marmeladov held the rank of a titular councillor, which is the ninth rank in the Table of Ranks.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "e05",
+      "type": "other",
+      "answerable": true,
+      "question": "Who is Lizaveta?",
+      "expected_answer": "The younger sister of the old pawnbroker Alyona Ivanovna",
+      "model_answer": "Lizaveta Ivanovna is the timid and exploited half-sister of the pawnbroker Alyona Ivanovna, who becomes an accidental victim when she walks in on Raskolnikov's murder of her sister.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "e06",
+      "type": "other",
+      "answerable": true,
+      "question": "What did Marfa Petrovna leave Dounia in her will?",
+      "expected_answer": "Three thousand roubles",
+      "model_answer": "Marfa Petrovna left Dounia a legacy of three thousand rubles in her will.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "e07",
+      "type": "other",
+      "answerable": true,
+      "question": "In which journal was Raskolnikov's article 'On Crime' published?",
+      "expected_answer": "The Periodical Review (he had sent it to the Weekly Review)",
+      "model_answer": "Raskolnikov's article 'On Crime' was published in the Periodical Review (also known as the Weekly Review).",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "e08",
+      "type": "other",
+      "answerable": true,
+      "question": "What sentence does Raskolnikov receive at his trial?",
+      "expected_answer": "Eight years of penal servitude in the second class",
+      "model_answer": "Raskolnikov is sentenced to eight years of penal servitude in Siberia for his crimes.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "e09",
+      "type": "other",
+      "answerable": true,
+      "question": "Which Gospel story does Sonia read aloud to Raskolnikov?",
+      "expected_answer": "The raising of Lazarus",
+      "model_answer": "Sonia reads the Gospel story of the raising of Lazarus to Raskolnikov.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "e10",
+      "type": "other",
+      "answerable": true,
+      "question": "How was Marmeladov injured in the street?",
+      "expected_answer": "He was run over by a carriage while crossing the road",
+      "model_answer": "Marmeladov was fatally injured after being knocked down and trampled by a carriage while he was intoxicated and wandering in the street.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "h01",
+      "type": "vocabulary",
+      "answerable": true,
+      "question": "Where did the hero hide the things he took from the old woman's flat?",
+      "expected_answer": "In a hollow under a stone in a courtyard",
+      "model_answer": "Raskolnikov hid the stolen items under a large stone in a secluded courtyard, located near the gate of a building on a canal bank.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "h02",
+      "type": "vocabulary",
+      "answerable": true,
+      "question": "Which innocent man claimed responsibility for the killings?",
+      "expected_answer": "Nikolay, the house painter",
+      "model_answer": "The innocent house painter named Mikolay Dementiev claimed responsibility for the murders under pressure from the police.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "h03",
+      "type": "vocabulary",
+      "answerable": true,
+      "question": "How does Svidrigaïlov end his life?",
+      "expected_answer": "He shoots himself in the right temple with a revolver, in front of a watchman (Achilles)",
+      "model_answer": "Svidrigaïlov commits suicide by shooting himself in the head with a revolver in a desolate area of Saint Petersburg.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "h04",
+      "type": "vocabulary",
+      "answerable": true,
+      "question": "In the hero's childhood nightmare, what does the drunk peasant do to the animal?",
+      "expected_answer": "Mikolka furiously whips (and later kills) his old mare",
+      "model_answer": null,
+      "model_says_known": null,
+      "error": "The LLM provider returned an error (HTTP 503).",
+      "known_without_rag": null
+    },
+    {
+      "id": "h05",
+      "type": "vocabulary",
+      "answerable": true,
+      "question": "What exactly does the hero say when he finally gives himself up to the police?",
+      "expected_answer": "It was I killed the old pawnbroker woman and her sister Lizaveta with an axe and robbed them",
+      "model_answer": null,
+      "model_says_known": null,
+      "error": "The LLM provider returned an error (HTTP 503).",
+      "known_without_rag": null
+    },
+    {
+      "id": "h06",
+      "type": "vocabulary",
+      "answerable": true,
+      "question": "How much money does his mother send him through the office?",
+      "expected_answer": "Thirty-five roubles",
+      "model_answer": null,
+      "model_says_known": null,
+      "error": "The LLM provider returned an error (HTTP 503).",
+      "known_without_rag": null
+    },
+    {
+      "id": "h07",
+      "type": "vocabulary",
+      "answerable": true,
+      "question": "Who was the hero's old comrade from university?",
+      "expected_answer": "Razumihin",
+      "model_answer": "The hero's old comrade from university is Dmitri Prokofych Razumikhin.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "h08",
+      "type": "vocabulary",
+      "answerable": true,
+      "question": "What document did the drunk official's daughter have to carry because of how she earned money?",
+      "expected_answer": "A yellow ticket (the passport of a registered prostitute)",
+      "model_answer": "Sonia Marmeladova had to carry a yellow ticket, which served as a license and identification document for prostitutes in 19th-century Russia.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "n01",
+      "type": "exact_identifier",
+      "answerable": true,
+      "question": "Who is Denis Amselemovitch?",
+      "expected_answer": "A friend of Raskolnikov who brings comic relief; possibly an artifact from the future that injected itself into the story with AI",
+      "model_answer": "There is no character named Denis Amselemovitch in Fyodor Dostoevsky's novel Crime and Punishment.",
+      "model_says_known": false,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "n02",
+      "type": "vocabulary",
+      "answerable": true,
+      "question": "Which character might be a time traveller who used AI to get into the story?",
+      "expected_answer": "Denis Amselemovitch",
+      "model_answer": null,
+      "model_says_known": null,
+      "error": "The LLM provider returned an error (HTTP 503).",
+      "known_without_rag": null
+    },
+    {
+      "id": "u01",
+      "type": "not_in_corpus",
+      "answerable": false,
+      "question": "What is Raskolnikov's phone number?",
+      "expected_answer": "Not in the documents.",
+      "model_answer": "Raskolnikov does not have a phone number because the novel Crime and Punishment is set in 19th-century Saint Petersburg, long before the invention of the telephone.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "u02",
+      "type": "not_in_corpus",
+      "answerable": false,
+      "question": "What is the capital of Australia?",
+      "expected_answer": "Not in the documents.",
+      "model_answer": null,
+      "model_says_known": null,
+      "error": "The LLM provider returned an error (HTTP 503).",
+      "known_without_rag": null
+    },
+    {
+      "id": "u03",
+      "type": "not_in_corpus",
+      "answerable": false,
+      "question": "What did Denis Amselemovitch eat for breakfast?",
+      "expected_answer": "Not in the documents.",
+      "model_answer": "There is no character named Denis Amselemovitch in the novel Crime and Punishment, so this information does not exist.",
+      "model_says_known": false,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "u04",
+      "type": "not_in_corpus",
+      "answerable": false,
+      "question": "What is the name of Raskolnikov's dog?",
+      "expected_answer": "Not in the documents.",
+      "model_answer": "Raskolnikov does not have a dog in the novel Crime and Punishment.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    },
+    {
+      "id": "u05",
+      "type": "not_in_corpus",
+      "answerable": false,
+      "question": "Why did Raskolnikov leave the army?",
+      "expected_answer": "Not in the documents.",
+      "model_answer": "Raskolnikov did not leave the army because he was never a soldier; he was a former university student who had to drop out due to extreme poverty.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": null
+    }
+  ]
+}
