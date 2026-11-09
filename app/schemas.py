@@ -52,7 +52,10 @@ class ChunkRef(BaseModel):
     end: int
     start_line: int
     end_line: int
-    distance: float     # vector distance: lower = closer. NOT a confidence.
+    # Vector distance: lower = closer. NOT a confidence. None when the dense retriever did not find the chunk.
+    distance: float | None = None
+    # V3: BM25 score (higher = better match, also NOT a confidence). None when BM25 did not find the chunk.
+    bm25_score: float | None = None
     text: str
 
 

@@ -1,8 +1,8 @@
 import json
-import re
 import time
 from datetime import datetime
 from app import documents, rag
+from app.chunking import find_span, coverage
 from app.config import ROOT_DIR, MODEL
 
 # Retrieval evaluation: how often is the RIGHT PASSAGE in the top-k?
@@ -37,21 +37,6 @@ def questions_file(corpus):
 def load_questions(corpus):
     lines = questions_file(corpus).read_text(encoding="utf-8").splitlines()
     return [json.loads(line) for line in lines if line.strip()]
-
-
-def find_span(text, quote):
-    # Files are hard-wrapped (a newline every ~70 characters), so a quote may cross line breaks.
-    # We match it word by word, with any whitespace (spaces, newlines) between the words.
-    pattern = r"\s+".join(re.escape(word) for word in quote.split())
-    match = re.search(pattern, text)
-    if match is None:
-        raise ValueError(f"Evidence quote not found in the source, fix the question set: {quote!r}")
-    return match.start(), match.end()
-
-
-def coverage(chunk, span):
-    overlap = min(chunk.end, span[1]) - max(chunk.start, span[0])
-    return max(overlap, 0) / (span[1] - span[0])
 
 
 def covers(chunk, evidence):

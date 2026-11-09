@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 from app.config import CORPORA_DIR, CORPORA, ALLOWED_EXTENSIONS
 from app.chunking import chunk_text
-from app import store
+from app import store, bm25
 
 # Document management: each corpus is simply a folder data/corpora/<corpus>/, one file per document.
 # The file name is the document id inside its corpus (it is stored as "source" in the chunk metadata,
@@ -81,9 +81,11 @@ def delete_document(corpus, name):
     # otherwise a deleted document would come back when switching settings.
     for collection in store.all_collections(corpus):
         collection.delete(where={"source": name})
+    # V3: same rule for the keyword index.
+    bm25.delete_source(corpus, name)
 
 
-# --- Indexing phase: document -> chunks -> embeddings -> vector DB ------------
+# --- Indexing phase: document -> chunks -> embeddings -> vector DB (+ BM25) ---
 def index_document(corpus, name, settings):
     collection = store.get_collection(corpus, settings)
 
@@ -91,12 +93,14 @@ def index_document(corpus, name, settings):
     collection.delete(where={"source": name})
 
     chunks = chunk_text(read_document(corpus, name), settings.chunk_size, settings.overlap_percent)
+    # The chunk ids, shared by the vector DB and the BM25 index (RRF matches chunks by id).
+    ids = [f"{name}::{i}" for i in range(len(chunks))]
 
     # Chroma computes the embeddings itself (with store.embedding_function) when we add documents.
     for batch_start in range(0, len(chunks), ADD_BATCH_SIZE):
         batch = chunks[batch_start:batch_start + ADD_BATCH_SIZE]
         collection.add(
-            ids=[f"{name}::{batch_start + i}" for i in range(len(batch))],
+            ids=ids[batch_start:batch_start + ADD_BATCH_SIZE],
             documents=[c["text"] for c in batch],
             # The metadata is what makes a reference verifiable: which file, which characters, which lines.
             metadatas=[
@@ -111,7 +115,9 @@ def index_document(corpus, name, settings):
                 for i, c in enumerate(batch)
             ],
         )
-    print(f"Indexed {corpus}/{name}: {len(chunks)} chunks into {collection.name}")
+    # V3: the same chunks, with the same ids, go into the keyword index (tokens only, no embedding).
+    bm25.index_chunks(corpus, settings, name, ids, chunks)
+    print(f"Indexed {corpus}/{name}: {len(chunks)} chunks into {collection.name} (vectors + BM25)")
     return len(chunks)
 
 
@@ -130,4 +136,7 @@ def index_missing(corpus, settings, names=None):
 
 
 def is_indexed(corpus, name, settings):
-    return store.has_chunks(store.get_collection(corpus, settings), name)
+    # V3: indexed = in BOTH stores. A V2 data/ folder has the vectors but no BM25 rows yet:
+    # this makes index_missing() re-index those documents once, with no manual migration.
+    return (store.has_chunks(store.get_collection(corpus, settings), name)
+            and bm25.has_chunks(corpus, settings, name))

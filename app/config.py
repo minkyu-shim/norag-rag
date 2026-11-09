@@ -14,6 +14,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
 CORPORA_DIR = DATA_DIR / "corpora"    # one sub-folder per corpus, one .md/.txt file per document
 CHROMA_DIR = DATA_DIR / "chroma"      # the vector DB (separate from ./chroma_db used by the scripts)
+BM25_FILE = DATA_DIR / "bm25.sqlite"  # V3: the keyword index (SQLite FTS5), next to the vector DB
 SETTINGS_FILE = DATA_DIR / "settings.json"
 WEB_DIR = ROOT_DIR / "web"
 

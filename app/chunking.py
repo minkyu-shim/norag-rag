@@ -1,3 +1,4 @@
+import re
 from bisect import bisect_right
 from app.config import MIN_CHUNK_LENGTH
 
@@ -53,3 +54,23 @@ def chunk_text(text, chunk_size, overlap_percent):
             break
 
     return chunks
+
+
+# --- Quotes -> character spans ------------------------------------------------
+# A quote (evidence in the question sets, provenance in the concept graph) is located in its file as a
+# character span [start, end). Spans do not depend on the chunk setting, chunk ids do: that is why the
+# evaluation AND the graph store quotes, and map them onto the chunks of the current setting with coverage().
+def find_span(text, quote):
+    # Files are hard-wrapped (a newline every ~70 characters), so a quote may cross line breaks.
+    # We match it word by word, with any whitespace (spaces, newlines) between the words.
+    pattern = r"\s+".join(re.escape(word) for word in quote.split())
+    match = re.search(pattern, text)
+    if match is None:
+        raise ValueError(f"Quote not found in the source: {quote!r}")
+    return match.start(), match.end()
+
+
+def coverage(chunk, span):
+    # Share of the span [start, end) that lies inside the chunk (0 = none of it, 1 = all of it).
+    overlap = min(chunk.end, span[1]) - max(chunk.start, span[0])
+    return max(overlap, 0) / (span[1] - span[0])
