@@ -50,6 +50,8 @@ textarea { margin: 12px 0 8px; resize: vertical; }
 
 fieldset { border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
 legend { color: var(--muted); font-size: 13px; }
+fieldset + fieldset { margin-top: 8px; }
+label:has(input:disabled) { color: var(--muted); }
 .sources { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 
 .hidden { display: none !important; }
@@ -78,6 +80,7 @@ h3 small { font-weight: normal; color: var(--muted); }
   padding: 8px 12px; margin-bottom: 6px; cursor: pointer;
 }
 .retrieved li.cited { background: var(--cited); border-color: var(--accent); }
+.retrieved .found-by { color: var(--accent); font-size: 12px; }
 .retrieved .preview { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 table { width: 100%; border-collapse: collapse; background: var(--surface); margin-top: 12px; }

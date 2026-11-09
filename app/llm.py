@@ -1,9 +1,10 @@
+import time
 import openai
 from pydantic import ValidationError
 from app.config import (
     GOOGLE_API_KEY, LLM_BASE_URL, MODEL, LLM_TIMEOUT_SECONDS, LLM_INVALID_OUTPUT_RETRIES,
 )
-from app.schemas import LLMAnswer
+from app.schemas import LLMAnswer, Cost
 
 # Talking to the LLM: Gemini through Google's OpenAI-compatible endpoint (same as the scripts).
 #
@@ -40,10 +41,16 @@ else:
     print("WARNING: GOOGLE_API_KEY is not set (see .env.example). /api/ask will return an error.")
 
 
-def call_llm(prompt):
+def call_llm(prompt, cost=None):
+    # V3: `cost` (a schemas.Cost) is filled in place: one more call, its tokens and its time.
+    # It is updated even when the call fails, so a failing provider still shows up in the cost.
     if client is None:
         raise ProviderError("The LLM is not configured: set GOOGLE_API_KEY in .env and restart.", 500)
+    if cost is None:
+        cost = Cost()
 
+    cost.llm_calls += 1
+    started = time.perf_counter()
     try:
         response = client.chat.completions.create(
             model=MODEL,
@@ -66,14 +73,19 @@ def call_llm(prompt):
         raise ProviderError(f"The LLM provider does not know the model {MODEL!r} (404). Change MODEL in app/config.py.", 500)
     except openai.APIStatusError as e:
         raise ProviderError(f"The LLM provider returned an error (HTTP {e.status_code}).", 502)
+    finally:
+        cost.llm_ms += round((time.perf_counter() - started) * 1000, 1)
 
+    if response.usage:      # some providers leave it out: then the tokens stay unknown (0)
+        cost.prompt_tokens += response.usage.prompt_tokens or 0
+        cost.completion_tokens += response.usage.completion_tokens or 0
     return response.choices[0].message.content or ""
 
 
-def ask_llm_for_answer(prompt):
+def ask_llm_for_answer(prompt, cost=None):
     # 1 normal attempt + LLM_INVALID_OUTPUT_RETRIES extra attempts if the output is invalid.
     for attempt in range(1 + LLM_INVALID_OUTPUT_RETRIES):
-        raw = call_llm(prompt)
+        raw = call_llm(prompt, cost)
         try:
             return LLMAnswer.model_validate_json(raw)
         except ValidationError as e:

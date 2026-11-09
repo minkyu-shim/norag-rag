@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Naive RAG — V2</title>
+  <title>Hybrid RAG — V3</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>Naive RAG <span class="tag">V2</span></h1>
+    <h1>Hybrid RAG <span class="tag">V3</span></h1>
     <!-- Every tab works on the corpus chosen here (the API needs it on every call) -->
     <label class="corpus-picker">Corpus
       <select id="corpus"></select>
@@ -34,6 +34,16 @@
           <legend>Search in</legend>
           <div id="source-list" class="sources"></div>
         </fieldset>
+        <!-- V3: the retrievers that are ON for this question; their results are fused with RRF -->
+        <fieldset>
+          <legend>Retrievers <small>(fused with RRF)</small></legend>
+          <div id="retriever-list" class="sources">
+            <label><input type="checkbox" value="dense" checked> dense (embeddings)</label>
+            <label><input type="checkbox" value="bm25" checked> BM25 (keywords)</label>
+            <label id="graph-option" title="No concept graph built for this corpus and chunk setting">
+              <input type="checkbox" value="graph" disabled> concept graph</label>
+          </div>
+        </fieldset>
         <textarea id="question" rows="3" placeholder="Ask a question about the documents of this corpus…" required></textarea>
         <button type="submit" id="ask-button">Ask</button>
       </form>
@@ -42,9 +52,10 @@
         <div id="status-banner" class="banner"></div>
         <ul id="warnings" class="warnings"></ul>
         <div id="answer" class="answer"></div>
+        <p id="cost" class="meta"></p>
         <div id="citations" class="chips"></div>
 
-        <h3>Retrieved passages <small>(top-k, closest first — distance is not a confidence)</small></h3>
+        <h3>Retrieved passages <small>(top-k after RRF fusion — found by: retriever #rank in its own list)</small></h3>
         <ol id="retrieved" class="retrieved"></ol>
       </div>
     </section>

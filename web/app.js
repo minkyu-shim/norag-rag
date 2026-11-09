@@ -1,4 +1,4 @@
-// Plain JavaScript UI for the V2 API (no framework, no build step).
+// Plain JavaScript UI for the V3 API (no framework, no build step).
 // Every call goes through api(), which turns an HTTP error into a readable message.
 
 const $ = (id) => document.getElementById(id);
@@ -198,6 +198,26 @@ $("upload-form").addEventListener("submit", async (event) => {
   refresh();
 });
 
+// --- Retrievers (V3) ----------------------------------------------------------
+function checkedRetrievers() {
+  return [...document.querySelectorAll("#retriever-list input")].filter((i) => i.checked).map((i) => i.value);
+}
+
+// "dense #10 · bm25 #1 · RRF 0.0307": which retriever(s) found the chunk, and at which rank in their own list.
+function foundByText(c) {
+  const parts = Object.entries(c.found_by).map(([name, rank]) => `${name} #${rank}`);
+  if (c.rrf_score !== null) parts.push(`RRF ${c.rrf_score.toFixed(4)}`);
+  return parts.join(" · ");
+}
+
+// Scores are only known for the retrievers that found the chunk.
+function scoresText(c) {
+  const parts = [];
+  if (c.distance !== null) parts.push(`distance ${c.distance.toFixed(3)}`);
+  if (c.bm25_score !== null) parts.push(`BM25 ${c.bm25_score.toFixed(2)}`);
+  return parts.join(" · ");
+}
+
 // --- Ask ---------------------------------------------------------------------
 const STATUS_KIND = {
   answered: "ok",
@@ -214,11 +234,16 @@ $("ask-form").addEventListener("submit", async (event) => {
     showError("Select at least one document to search in.");
     return;
   }
+  const retrievers = checkedRetrievers();
+  if (retrievers.length === 0) {
+    showError("Switch on at least one retriever.");
+    return;
+  }
 
   $("ask-button").disabled = true;
   $("ask-button").textContent = "Thinking…";
   try {
-    showResult(await api("POST", "/api/ask", { corpus: corpus(), question: $("question").value, sources }));
+    showResult(await api("POST", "/api/ask", { corpus: corpus(), question: $("question").value, sources, retrievers }));
   } catch (e) {
     showError(e.message);
   } finally {
@@ -227,10 +252,17 @@ $("ask-form").addEventListener("submit", async (event) => {
   }
 });
 
+function costText(r) {
+  const c = r.cost;
+  let text = `Retrievers: ${r.retrievers.join(" + ")} · retrieval ${c.retrieval_ms} ms`;
+  if (c.llm_calls) text += ` · ${c.llm_calls} LLM call(s), ${c.prompt_tokens} + ${c.completion_tokens} tokens, ${c.llm_ms} ms`;
+  return text;
+}
+
 function showError(message) {
   $("result").classList.remove("hidden");
   showBanner($("status-banner"), message, "err");
-  ["warnings", "answer", "citations", "retrieved"].forEach((id) => { $(id).innerHTML = ""; });
+  ["warnings", "answer", "cost", "citations", "retrieved"].forEach((id) => { $(id).innerHTML = ""; });
 }
 
 function showResult(r) {
@@ -245,6 +277,7 @@ function showResult(r) {
   }
 
   $("answer").textContent = r.answer || "";
+  $("cost").textContent = costText(r);
 
   // Citations: one chip per cited chunk. Clicking opens the chunk.
   $("citations").innerHTML = "";
@@ -262,10 +295,12 @@ function showResult(r) {
   for (const c of r.retrieved) {
     const li = document.createElement("li");
     li.classList.toggle("cited", cited.has(c.id));
-    li.innerHTML = `<div><strong></strong> <span class="meta"></span></div><div class="preview"></div>`;
+    li.innerHTML = `<div><strong></strong> <span class="meta"></span></div>
+      <div class="found-by"></div><div class="preview"></div>`;
     li.querySelector("strong").textContent = `[${c.label}]${cited.has(c.id) ? " cited" : ""}`;
     li.querySelector(".meta").textContent =
-      `${c.source} · lines ${c.start_line}–${c.end_line} · distance ${c.distance.toFixed(3)}`;
+      `${c.source} · lines ${c.start_line}–${c.end_line} · ${scoresText(c)}`;
+    li.querySelector(".found-by").textContent = `found by: ${foundByText(c)}`;
     li.querySelector(".preview").textContent = c.text.replace(/\s+/g, " ");
     li.addEventListener("click", () => openChunk(c));
     $("retrieved").append(li);
@@ -276,7 +311,7 @@ function showResult(r) {
 function openChunk(c) {
   $("chunk-title").textContent = `[${c.label}] ${c.source}`;
   $("chunk-meta").textContent =
-    `lines ${c.start_line}–${c.end_line} · characters ${c.start}–${c.end} · distance ${c.distance.toFixed(3)} · id ${c.id}`;
+    `lines ${c.start_line}–${c.end_line} · characters ${c.start}–${c.end} · ${scoresText(c)} · found by: ${foundByText(c)} · id ${c.id}`;
   $("chunk-text").textContent = c.text;
   $("chunk-panel").classList.remove("hidden");
 }

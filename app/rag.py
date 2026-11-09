@@ -1,9 +1,11 @@
-from app import store, documents
+import time
+from app import store, documents, bm25
 from app.llm import ask_llm_for_answer, ProviderError, InvalidOutputError
-from app.schemas import AskResponse, ChunkRef
+from app.schemas import AskResponse, ChunkRef, Cost
 
 # The answering phase, run for every question:
-#   question -> embedding -> top-k chunks (only from the chosen documents) -> LLM -> validated answer
+#   question -> each retriever that is ON -> RRF fusion -> top-k chunks -> LLM -> validated answer
+#   (V1/V2 had one retriever, dense; V3 adds BM25 and the concept graph, fused with RRF.)
 #
 # The goal is to never produce a SILENT wrong answer: every outcome has an explicit status
 # (see AskStatus in schemas.py), and the retrieved chunks are always returned so the user can check.
@@ -13,14 +15,16 @@ class NotReadyError(Exception):
     """The question cannot be asked yet (unknown documents, index missing). The user can fix it."""
 
 
-# --- Retrieval ---------------------------------------------------------------
-def retrieve(corpus, question, sources, settings):
+# --- Retrieval: one function per retriever ------------------------------------
+# Every retriever has the same shape: (corpus, question, sources, settings, n) -> its n best chunks,
+# best first. That is all RRF needs, so adding a retriever is adding one line to RETRIEVERS.
+def dense_retrieve(corpus, question, sources, settings, n):
     collection = store.get_collection(corpus, settings)
 
     # Metadata filter: only search in the documents the user selected.
     results = collection.query(
         query_texts=[question],
-        n_results=settings.top_k,
+        n_results=n,
         where={"source": {"$in": sources}},
     )
 
@@ -41,6 +45,62 @@ def retrieve(corpus, question, sources, settings):
             text=text,
         ))
     return chunks
+
+
+RETRIEVERS = {
+    "dense": dense_retrieve,
+    "bm25": bm25.retrieve,
+}
+
+
+# --- Fusion: Reciprocal Rank Fusion ------------------------------------------------
+# Dense distances and BM25 scores are on different scales: we cannot add them. RRF only uses RANKS:
+#   score(chunk) = sum over the retrievers that found it of 1 / (k + rank)
+# Example: ranked #10 by dense and #1 by BM25  ->  1/70 + 1/61 = 0.0307,
+#          better than a chunk ranked #1 by dense only (1/61 = 0.0164).
+# k = 60 is the value of the original paper: it keeps the first ranks from crushing all the others.
+RRF_K = 60
+# Each retriever proposes this many candidates. More candidates = a chunk ranked low by one retriever
+# can still be rescued by another; the final top-k is cut AFTER the fusion.
+RRF_CANDIDATES = 20
+
+
+def rrf(rankings: dict[str, list[str]], k: int = RRF_K) -> list[tuple[str, float]]:
+    """rankings: {"dense": [chunk_id, ...], "bm25": [...], "graph": [...]}"""
+    scores: dict[str, float] = {}
+    for ranked_ids in rankings.values():
+        for rank, chunk_id in enumerate(ranked_ids, start=1):
+            scores[chunk_id] = scores.get(chunk_id, 0.0) + 1 / (k + rank)
+    # sorted() is stable: on a tie, the chunk seen first (first retriever) stays first.
+    return sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+
+def retrieve(corpus, question, sources, settings, retrievers):
+    """Returns (fused, rankings).
+    fused:    the top_k chunks after RRF, labelled C1..Ck, each with found_by and rrf_score.
+    rankings: each retriever's OWN list, before fusion (the evaluation measures both)."""
+    n = max(RRF_CANDIDATES, settings.top_k)
+    rankings = {name: RETRIEVERS[name](corpus, question, sources, settings, n) for name in retrievers}
+
+    # The same chunk found by two retrievers: merge what each one knows (distance, BM25 score, ranks).
+    merged = {}
+    for name, chunks in rankings.items():
+        for rank, chunk in enumerate(chunks, start=1):
+            if chunk.id not in merged:
+                merged[chunk.id] = chunk.model_copy(update={"found_by": {}})
+            m = merged[chunk.id]
+            m.found_by[name] = rank
+            if chunk.distance is not None:
+                m.distance = chunk.distance
+            if chunk.bm25_score is not None:
+                m.bm25_score = chunk.bm25_score
+
+    fused = rrf({name: [c.id for c in chunks] for name, chunks in rankings.items()})
+    # With one retriever only, RRF keeps its order: dense alone gives exactly the V2 results.
+    return [
+        merged[chunk_id].model_copy(update={"label": f"C{i + 1}", "rrf_score": round(score, 5)})
+        for i, (chunk_id, score) in enumerate(fused[:settings.top_k])
+    ], rankings
 
 
 # --- Prompt ------------------------------------------------------------------
@@ -93,24 +153,29 @@ def normalize_label(label):
     return label.strip().strip("[]").upper()
 
 
-def answer(corpus, question, sources, settings):
+def answer(corpus, question, sources, settings, retrievers):
     """Returns (AskResponse, http_status)."""
     check_ready(corpus, sources, settings)
-    return answer_from_chunks(question, retrieve(corpus, question, sources, settings))
+    started = time.perf_counter()
+    retrieved, _ = retrieve(corpus, question, sources, settings, retrievers)
+    cost = Cost(retrieval_ms=round((time.perf_counter() - started) * 1000, 1))
+    return answer_from_chunks(question, retrieved, retrievers, cost)
 
 
-def answer_from_chunks(question, retrieved):
+def answer_from_chunks(question, retrieved, retrievers, cost):
     # The LLM + verification half of answer(). eval/run_eval.py calls it directly with the chunks
     # it already retrieved, so the LLM sees exactly the chunks that were measured.
+    # `cost` already holds the retrieval time; the LLM calls are added to it.
+    common = {"retrieved": retrieved, "retrievers": retrievers, "cost": cost}
     try:
-        llm_answer = ask_llm_for_answer(build_prompt(question, retrieved))
+        llm_answer = ask_llm_for_answer(build_prompt(question, retrieved), cost)
     except ProviderError as e:
-        return AskResponse(status="provider_error", message=str(e), retrieved=retrieved), e.http_status
+        return AskResponse(status="provider_error", message=str(e), **common), e.http_status
     except InvalidOutputError:
         return AskResponse(
             status="invalid_output",
             message="The LLM returned an answer in an unexpected format, even after a retry. Try again.",
-            retrieved=retrieved,
+            **common,
         ), 502
 
     # --- Verification: a citation must point to a chunk we actually retrieved ---
@@ -137,6 +202,6 @@ def answer_from_chunks(question, retrieved):
         answer=llm_answer.answer,
         # Citations are only shown with a real answer, not with "not found".
         citations=citations if status == "answered" else [],
-        retrieved=retrieved,
         warnings=warnings,
+        **common,
     ), 200

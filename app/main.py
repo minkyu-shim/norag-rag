@@ -32,7 +32,7 @@ async def lifespan(app):
     yield
 
 
-app = FastAPI(title="Naive RAG — V2", lifespan=lifespan)
+app = FastAPI(title="Hybrid RAG — V3", lifespan=lifespan)
 
 
 def settings_response(corpus, settings):
@@ -106,7 +106,8 @@ def delete_document(name: str, corpus: CorpusName):
 @app.post("/api/ask", response_model=AskResponse)
 def ask(request: AskRequest):
     try:
-        response, http_status = rag.answer(request.corpus, request.question, request.sources, load_settings())
+        response, http_status = rag.answer(
+            request.corpus, request.question, request.sources, load_settings(), request.retrievers)
     except rag.NotReadyError as e:
         raise HTTPException(status_code=400, detail=str(e))
     # Even on an error status (429, 502...) the body is a full AskResponse,
