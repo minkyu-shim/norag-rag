@@ -17,6 +17,7 @@
       <button class="tab active" data-tab="ask">Ask</button>
       <button class="tab" data-tab="documents">Documents</button>
       <button class="tab" data-tab="words">Words</button>
+      <button class="tab" data-tab="eval">Evaluation</button>
       <button class="tab" data-tab="settings">Settings</button>
     </nav>
   </header>
@@ -141,6 +142,37 @@
             <ol id="qwords-evidence-list" class="retrieved"></ol>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- EVALUATION (V2/V3): same code as python eval/run_eval.py ----------------->
+    <section id="tab-eval" class="panel hidden">
+      <form id="eval-form">
+        <fieldset>
+          <legend>Retrievers <small>(fused with RRF)</small></legend>
+          <div id="eval-retrievers" class="sources">
+            <label><input type="checkbox" value="dense" checked> dense</label>
+            <label><input type="checkbox" value="bm25" checked> BM25</label>
+            <label><input type="checkbox" value="graph"> concept graph</label>
+          </div>
+        </fieldset>
+        <label class="check"><input type="checkbox" id="eval-llm">
+          Also generate the answers with the LLM, to grade them by hand (about 5 s and 1 API call per question)</label>
+        <button type="submit" id="eval-button">Run the evaluation</button>
+      </form>
+      <p class="hint">Runs every question of this corpus' question set (eval/questions_&lt;corpus&gt;.jsonl) with the
+        current chunk settings, and saves the results in eval/results/. A chunk is relevant when it covers at
+        least half of an evidence quote; unanswerable questions are left out of hit@k and recall@k.</p>
+      <div id="eval-message" class="banner hidden"></div>
+      <div id="eval-result" class="hidden">
+        <p id="eval-file" class="meta"></p>
+        <div class="table-scroll"><table id="eval-table"><thead></thead><tbody></tbody></table></div>
+        <p id="eval-extra" class="meta"></p>
+        <h3>Per question <small>(rank of the first relevant chunk, in the top 10)</small></h3>
+        <table id="eval-questions">
+          <thead><tr><th>id</th><th>type</th><th>question</th><th>rank</th><th>LLM</th></tr></thead>
+          <tbody></tbody>
+        </table>
       </div>
     </section>
 

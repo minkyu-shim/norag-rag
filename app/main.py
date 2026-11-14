@@ -3,10 +3,10 @@ from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Literal
-from app import documents, store, rag, graph, graph_retrieval, words
+from app import documents, store, rag, graph, graph_retrieval, words, evaluation, llm
 from app.config import WEB_DIR, CORPORA
 from app.schemas import (Settings, SettingsResponse, AskRequest, AskResponse, DocumentInfo, CorpusName,
-                         WordsQuestionRequest)
+                         EvalRequest, WordsQuestionRequest)
 from app.settings import load_settings, save_settings
 
 # The web API. Both phases of RAG are behind it:
@@ -126,6 +126,27 @@ def ask(request: AskRequest):
     # Even on an error status (429, 502...) the body is a full AskResponse,
     # so the UI can show the message AND the chunks that were retrieved.
     return JSONResponse(status_code=http_status, content=response.model_dump())
+
+
+# --- Evaluation (V2: also startable from the UI) ------------------------------------
+# Same code as the terminal (python eval/run_eval.py), same results folder. Uses the CURRENT settings.
+# Synchronous on purpose (simple): retrieval only takes seconds; with the LLM the request lasts ~2 min.
+@app.post("/api/eval")
+def run_evaluation(request: EvalRequest):
+    if request.with_llm and llm.client is None:
+        raise HTTPException(status_code=400, detail="Generating answers needs GOOGLE_API_KEY in .env.")
+    if "graph" in request.retrievers and not graph_retrieval.is_available(request.corpus):
+        raise HTTPException(status_code=400, detail=f"No concept graph for {request.corpus!r}: "
+                                                    f"run  python scripts/build_graph.py {request.corpus}")
+    result = evaluation.evaluate(request.corpus, load_settings(), retrievers=request.retrievers,
+                                 with_llm=request.with_llm, log=lambda line: None)
+    path = evaluation.save(result)
+    # The chunk texts stay in the file: the UI only needs the numbers and one line per question.
+    questions = [{"id": r["id"], "type": r["type"], "answerable": r["answerable"], "question": r["question"],
+                  "rank": r.get("rank"), "llm_status": r["llm"]["status"] if "llm" in r else None}
+                 for r in result["questions"]]
+    return {"file": str(path.relative_to(evaluation.ROOT_DIR)), "settings": result["settings"],
+            "summary": result["summary"], "questions": questions}
 
 
 # --- Words analytics (V2) ---------------------------------------------------------

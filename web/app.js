@@ -529,9 +529,79 @@ function showQuestionWords(r) {
   }
 }
 
+// --- Evaluation (V2: started from the UI too) -------------------------------------
+$("eval-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const retrievers = [...document.querySelectorAll("#eval-retrievers input")].filter((i) => i.checked).map((i) => i.value);
+  if (retrievers.length === 0) {
+    showBanner($("eval-message"), "Switch on at least one retriever.", "err");
+    return;
+  }
+  const withLlm = $("eval-llm").checked;
+  const button = $("eval-button");
+  button.disabled = true;
+  button.textContent = "Running…";
+  showBanner($("eval-message"), withLlm
+    ? "Running every question and generating the answers: this takes a few minutes, keep this page open."
+    : "Running every question (retrieval only): a few seconds.", "");
+  try {
+    const r = await api("POST", "/api/eval", { corpus: corpus(), retrievers, with_llm: withLlm });
+    showEvaluation(r);
+    showBanner($("eval-message"), `Done. Saved to ${r.file}`, "ok");
+  } catch (e) {
+    showBanner($("eval-message"), e.message, "err");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Run the evaluation";
+  }
+});
+
+function showEvaluation(r) {
+  $("eval-result").classList.remove("hidden");
+  const s = r.settings;
+  $("eval-file").textContent = `${r.file} — retrievers ${s.retrievers.join(" + ")}, chunk ${s.chunk_size}, ` +
+    `overlap ${s.overlap_percent}%${s.with_llm ? `, answers by ${s.model} (top-${s.top_k})` : ""}`;
+
+  const metrics = [...s.ks.map((k) => `hit@${k}`), ...s.ks.map((k) => `recall@${k}`)];
+  // ALL + the question types: the summary entries that have hit@k ("unanswerable" has an "n" but no hit@k).
+  const groups = Object.keys(r.summary).filter((name) => r.summary[name][metrics[0]] !== undefined);
+  const head = $("eval-table").querySelector("thead");
+  head.innerHTML = `<tr><th>question type</th><th class="num">n</th>${metrics.map((m) => `<th class="num">${m}</th>`).join("")}</tr>`;
+  const body = $("eval-table").querySelector("tbody");
+  body.innerHTML = "";
+  for (const name of groups) {
+    const line = r.summary[name];
+    const row = document.createElement("tr");
+    row.classList.toggle("all", name === "ALL");
+    row.innerHTML = `<td></td><td class="num">${line.n}</td>${metrics.map((m) => `<td class="num">${line[m].toFixed(2)}</td>`).join("")}`;
+    row.cells[0].textContent = name;
+    body.append(row);
+  }
+
+  const c = r.summary.cost_per_question;
+  let extra = `Cost per question: retrieval ${c.retrieval_ms} ms`;
+  if (s.with_llm) extra += `, ${c.llm_calls} LLM call(s), ${Math.round(c.prompt_tokens)} + ${Math.round(c.completion_tokens)} tokens, LLM ${c.llm_ms} ms`;
+  if (r.summary.unanswerable) {
+    const u = r.summary.unanswerable;
+    extra += `. Unanswerable: ${u.abstained}/${u.n} abstained, ${u.hallucinated} hallucinated, ${u.errors} errors`;
+  }
+  $("eval-extra").textContent = extra + ".";
+
+  const qbody = $("eval-questions").querySelector("tbody");
+  qbody.innerHTML = "";
+  for (const q of r.questions) {
+    const row = document.createElement("tr");
+    row.innerHTML = "<td></td><td></td><td></td><td></td><td></td>";
+    const rank = q.answerable ? (q.rank ?? "missed") : "unanswerable";
+    [q.id, q.type, q.question, rank, q.llm_status ?? "–"].forEach((value, i) => { row.cells[i].textContent = value; });
+    row.cells[3].className = q.answerable && !q.rank ? "no" : "";
+    qbody.append(row);
+  }
+}
+
 // Clear what belongs to the previous corpus when the corpus changes.
 $("corpus").addEventListener("change", () => {
-  ["word-result", "qwords-result", "words-message"].forEach((id) => $(id).classList.add("hidden"));
+  ["word-result", "qwords-result", "eval-result", "words-message", "eval-message"].forEach((id) => $(id).classList.add("hidden"));
   $("vocab-table").classList.add("hidden");
   $("vocab-stats").textContent = "";
   $("qwords-text").value = "";

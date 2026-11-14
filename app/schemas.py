@@ -116,6 +116,14 @@ class AskResponse(BaseModel):
     cost: Cost = Cost()
 
 
+# --- Evaluation (V2, started from the UI) ---------------------------------------
+class EvalRequest(BaseModel):
+    corpus: CorpusName
+    retrievers: list[RetrieverName] = Field(default=DEFAULT_RETRIEVERS, min_length=1)
+    # Off by default: retrieval only is free and takes seconds; with the LLM it is ~5 s per question.
+    with_llm: bool = False
+
+
 # --- Words analytics (V2) --------------------------------------------------------
 class WordsQuestionRequest(BaseModel):
     corpus: CorpusName

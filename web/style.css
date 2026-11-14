@@ -101,7 +101,7 @@ th { font-size: 13px; color: var(--muted); font-weight: normal; }
 #chunk-close { position: absolute; top: 12px; right: 12px; background: none; color: var(--muted); border: none; font-size: 22px; }
 #chunk-text { white-space: pre-wrap; font: 14px/1.6 Georgia, serif; background: var(--bg); padding: 12px; border-radius: 6px; }
 
-/* V2: Words tab */
+/* V2: Words and Evaluation tabs */
 input[type=search], select { font: inherit; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px;
   background: var(--surface); color: var(--text); }
 #vocab-form input, #word-form input { flex: 1; min-width: 180px; }
@@ -112,11 +112,15 @@ input[type=search], select { font: inherit; padding: 6px 8px; border: 1px solid 
 .vocab-scroll { max-height: 360px; overflow-y: auto; }
 .vocab-scroll table { margin-top: 0; }
 .vocab-scroll thead th { position: sticky; top: 0; background: var(--surface); }
+.table-scroll { overflow-x: auto; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .link { background: none; border: none; color: var(--accent); padding: 0; text-decoration: underline; }
 .stack { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.check { display: block; margin: 10px 0; font-size: 14px; }
 .yes { color: var(--ok); } .no { color: var(--err); } .absent-word td:first-child { color: var(--err); }
 mark { background: #ffe58f; color: inherit; padding: 0 1px; }
+#eval-table td, #eval-table th { padding: 6px 8px; }
+#eval-table tr.all td { font-weight: 600; }
 
 @media (prefers-color-scheme: dark) {
   :root {
