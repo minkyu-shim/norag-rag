@@ -50,8 +50,9 @@ def main():
     ks = sorted(int(k) for k in args.k.split(","))
     settings = Settings(chunk_size=args.chunk_size, overlap_percent=args.overlap, top_k=args.top_k)
     result = evaluation.evaluate(args.corpus, settings, ks, retrievers=retrievers, with_llm=args.llm)
-    print_report(result, ks)
+    # Saved BEFORE printing: a run with --llm costs API calls, a bug in the printing must not lose it.
     path = evaluation.save(result)
+    print_report(result, ks)
     print(f"\nSaved {path.relative_to(Path.cwd()) if path.is_relative_to(Path.cwd()) else path}")
 
 
@@ -65,7 +66,8 @@ def print_report(result, ks):
               + "  " + " ".join(f"{'rec@' + str(k):>7}" for k in ks))
     print(header)
     print("-" * len(header))
-    groups = [name for name in summary if "n" in summary[name]]     # ALL + the question types
+    # ALL + the question types: the entries with hit@k ("unanswerable" also has an "n", but no hit@k).
+    groups = [name for name in summary if f"hit@{ks[0]}" in summary[name]]
     for name in groups:
         line = summary[name]
         print(f"{name:17} {line['n']:>3} " + " ".join(f"{line[f'hit@{k}']:>7.2f}" for k in ks)

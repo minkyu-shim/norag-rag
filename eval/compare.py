@@ -37,9 +37,10 @@ def main():
     latest = load_latest(args.files)
     for corpus in sorted({c for c, _ in latest}):
         runs = {name: r for (c, name), r in sorted(latest.items()) if c == corpus}
-        # The question types, in the order of the first run ("ALL" first). Summary entries without "n"
-        # (per_retriever, cost...) are not question types.
-        types = [t for t in next(iter(runs.values()))["summary"] if "n" in next(iter(runs.values()))["summary"][t]]
+        # The question types, in the order of the first run ("ALL" first). Summary entries without hit@k
+        # (per_retriever, cost, unanswerable...) are not question types.
+        first_summary = next(iter(runs.values()))["summary"]
+        types = [t for t in first_summary if any(key.startswith("hit@") for key in first_summary[t])]
 
         for metric in args.metrics.split(","):
             first = next(iter(runs.values()))["summary"]
