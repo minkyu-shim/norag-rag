@@ -16,6 +16,7 @@
     <nav>
       <button class="tab active" data-tab="ask">Ask</button>
       <button class="tab" data-tab="documents">Documents</button>
+      <button class="tab" data-tab="words">Words</button>
       <button class="tab" data-tab="settings">Settings</button>
     </nav>
   </header>
@@ -78,6 +79,69 @@
         <thead><tr><th>Document</th><th>Size</th><th>Chunks (current settings)</th><th></th></tr></thead>
         <tbody id="documents-table"></tbody>
       </table>
+    </section>
+
+    <!-- WORDS (V2): which words does the corpus contain, and where? --------->
+    <section id="tab-words" class="panel hidden">
+      <p class="hint">Words as the BM25 index sees them: lowercase, identifiers kept whole (kst-2044),
+        stopwords left out, no stemming. Counted in the chunks of the current chunk setting.</p>
+      <div class="row mode-switch">
+        <button type="button" class="mode active" data-mode="corpus">Corpus mode</button>
+        <button type="button" class="mode" data-mode="question">Question mode</button>
+      </div>
+      <div id="words-message" class="banner hidden"></div>
+
+      <!-- Corpus mode: vocabulary, then word -> chunks -->
+      <div id="words-corpus">
+        <form id="vocab-form" class="row">
+          <input type="search" id="vocab-filter" placeholder="Filter words (contains…)">
+          <select id="vocab-order">
+            <option value="frequent">most frequent first</option>
+            <option value="rare">rarest first (fewest chunks)</option>
+            <option value="alpha">alphabetical</option>
+          </select>
+          <button type="submit">Show vocabulary</button>
+        </form>
+        <p id="vocab-stats" class="meta"></p>
+        <div class="vocab-scroll">
+          <table id="vocab-table" class="hidden">
+            <thead><tr><th>Word</th><th class="num">Occurrences</th><th class="num">Chunks containing it</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <form id="word-form" class="row">
+          <input type="search" id="word-input" placeholder="One word, e.g. refund or KST-2044" required>
+          <button type="submit">Find the chunks</button>
+        </form>
+        <div id="word-result" class="hidden">
+          <h3 id="word-title"></h3>
+          <ol id="word-chunks" class="retrieved"></ol>
+        </div>
+      </div>
+
+      <!-- Question mode: question -> words -->
+      <div id="words-question" class="hidden">
+        <form id="qwords-form">
+          <label class="stack">Pick a question of the evaluation set
+            <select id="qwords-pick"><option value="">— or type your own question below —</option></select>
+          </label>
+          <textarea id="qwords-text" rows="2" placeholder="Type a question…"></textarea>
+          <button type="submit">Analyse the words</button>
+        </form>
+        <div id="qwords-result" class="hidden">
+          <p id="qwords-summary" class="meta"></p>
+          <table id="qwords-table">
+            <thead><tr><th>Word</th><th class="num">Occurrences</th><th class="num">Chunks containing it</th>
+              <th>In the answer chunk?</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <div id="qwords-evidence" class="hidden">
+            <h3>Chunk(s) that hold the answer <small>(question words highlighted)</small></h3>
+            <ol id="qwords-evidence-list" class="retrieved"></ol>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- SETTINGS ------------------------------------------------------------->

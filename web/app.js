@@ -44,7 +44,8 @@ function showBanner(element, text, kind) {
 
 // Settings (index_ready) and documents (chunk counts) both change after an index/upload/delete.
 async function refresh() {
-  await Promise.all([loadSettings(), loadDocuments(), loadGraphInfo()]);
+  vocabularyCorpus = null;    // a re-index or an upload changes the chunks: the Words tab reloads on its next opening
+  await Promise.all([loadSettings(), loadDocuments(), loadGraphInfo(), loadQuestionSet()]);
 }
 
 // --- Corpus ------------------------------------------------------------------
@@ -353,6 +354,195 @@ function openChunk(c) {
 }
 $("chunk-close").addEventListener("click", () => $("chunk-panel").classList.add("hidden"));
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("chunk-panel").classList.add("hidden"); });
+
+// --- Words analytics (V2) -------------------------------------------------------
+// Corpus mode: vocabulary, and word -> chunks. Question mode: question -> words. See app/words.py.
+
+// Wraps the given words in <mark>, using the same token pattern as the BM25 tokenizer (app/bm25.py).
+// Built with text nodes, never innerHTML: the chunk text is untrusted.
+function highlighted(text, words) {
+  const fragment = document.createDocumentFragment();
+  const pattern = /\w+(?:[-.]\w+)*/g;
+  let last = 0;
+  for (const match of text.matchAll(pattern)) {
+    const token = match[0].toLowerCase();
+    const parts = token.split(/[-.]/);
+    if (!words.has(token) && !parts.some((p) => words.has(p))) continue;
+    fragment.append(text.slice(last, match.index));
+    const mark = document.createElement("mark");
+    mark.textContent = match[0];
+    fragment.append(mark);
+    last = match.index + match[0].length;
+  }
+  fragment.append(text.slice(last));
+  return fragment;
+}
+
+function openWordChunk(c, words, extra = "") {
+  $("chunk-title").textContent = c.source;
+  $("chunk-meta").textContent = `lines ${c.start_line}–${c.end_line} · characters ${c.start}–${c.end} · id ${c.id}${extra}`;
+  $("chunk-text").replaceChildren(highlighted(c.text, words));
+  $("chunk-panel").classList.remove("hidden");
+}
+
+function chunkListItem(c, words, label) {
+  const li = document.createElement("li");
+  li.innerHTML = `<div><strong></strong> <span class="meta"></span></div><div class="preview"></div>`;
+  li.querySelector("strong").textContent = label;
+  li.querySelector(".meta").textContent = `${c.source} · lines ${c.start_line}–${c.end_line} · ${c.id}`;
+  li.querySelector(".preview").textContent = c.text.replace(/\s+/g, " ");
+  li.addEventListener("click", () => openWordChunk(c, words));
+  return li;
+}
+
+let vocabularyCorpus = null;   // the corpus whose vocabulary is on screen (reloaded when it changes)
+
+document.querySelectorAll(".mode").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".mode").forEach((b) => b.classList.toggle("active", b === button));
+    $("words-corpus").classList.toggle("hidden", button.dataset.mode !== "corpus");
+    $("words-question").classList.toggle("hidden", button.dataset.mode !== "question");
+  });
+});
+
+async function loadVocabulary() {
+  const asked = corpus();
+  const params = new URLSearchParams({ contains: $("vocab-filter").value.trim(), order: $("vocab-order").value });
+  try {
+    const v = await api("GET", withCorpus(`/api/words/vocabulary?${params}`));
+    if (asked !== corpus()) return;
+    vocabularyCorpus = asked;
+    $("words-message").classList.add("hidden");
+    $("vocab-stats").textContent = `${v.corpus}: ${v.chunks} chunks, ${v.tokens} words in total, ` +
+      `${v.distinct_words} distinct words` +
+      (v.matching_words !== v.distinct_words ? ` (${v.matching_words} match the filter)` : "") +
+      (v.words.length < v.matching_words ? ` — showing the first ${v.words.length}` : "") + ". Click a word to see its chunks.";
+    const body = $("vocab-table").querySelector("tbody");
+    body.innerHTML = "";
+    for (const w of v.words) {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td><button type="button" class="link"></button></td><td class="num">${w.count}</td><td class="num">${w.chunks}</td>`;
+      row.querySelector("button").textContent = w.word;
+      row.querySelector("button").addEventListener("click", () => showWord(w.word));
+      body.append(row);
+    }
+    $("vocab-table").classList.remove("hidden");
+  } catch (e) {
+    showBanner($("words-message"), e.message, "err");
+  }
+}
+$("vocab-form").addEventListener("submit", (event) => { event.preventDefault(); loadVocabulary(); });
+$("vocab-order").addEventListener("change", loadVocabulary);
+
+async function showWord(word) {
+  $("word-input").value = word;
+  try {
+    const w = await api("GET", withCorpus(`/api/words/word?word=${encodeURIComponent(word)}`));
+    $("words-message").classList.add("hidden");
+    $("word-result").classList.remove("hidden");
+    $("word-chunks").innerHTML = "";
+    if (w.ignored) {
+      $("word-title").textContent = w.message;
+      return;
+    }
+    $("word-title").textContent = w.chunk_count
+      ? `“${w.word}”: ${w.count} occurrence(s) in ${w.chunk_count} of ${w.total_chunks} chunks (most occurrences first)`
+      : `“${w.word}” does not appear anywhere in this corpus.`;
+    for (const c of w.chunks) {
+      $("word-chunks").append(chunkListItem(c, new Set([w.word]), `${c.occurrences}×`));
+    }
+    $("word-result").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (e) {
+    showBanner($("words-message"), e.message, "err");
+  }
+}
+$("word-form").addEventListener("submit", (event) => { event.preventDefault(); showWord($("word-input").value.trim()); });
+
+async function loadQuestionSet() {
+  const asked = corpus();
+  const questions = await api("GET", withCorpus("/api/words/questions"));
+  if (asked !== corpus()) return;
+  const select = $("qwords-pick");
+  select.length = 1;      // keep the "type your own" option
+  for (const q of questions) {
+    const option = document.createElement("option");
+    option.value = q.id;
+    option.textContent = `${q.id} · ${q.type}${q.answerable ? "" : " (unanswerable)"} · ${q.question}`;
+    select.append(option);
+  }
+}
+// Picking a question shows its text; typing a question un-picks the set question.
+$("qwords-pick").addEventListener("change", () => {
+  const option = $("qwords-pick").selectedOptions[0];
+  $("qwords-text").value = $("qwords-pick").value ? option.textContent.split(" · ").slice(2).join(" · ") : "";
+});
+$("qwords-text").addEventListener("input", () => { $("qwords-pick").value = ""; });
+
+$("qwords-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const body = { corpus: corpus(), question: $("qwords-text").value, question_id: $("qwords-pick").value || null };
+  try {
+    showQuestionWords(await api("POST", "/api/words/question", body));
+    $("words-message").classList.add("hidden");
+  } catch (e) {
+    showBanner($("words-message"), e.message, "err");
+  }
+});
+
+function showQuestionWords(r) {
+  $("qwords-result").classList.remove("hidden");
+  const fromSet = r.question_id !== null;
+  const parts = [`${r.words.length} indexed word(s) in the question, ${r.total_chunks} chunks in the corpus.`];
+  if (r.absent.length) parts.push(`Absent from the corpus: ${r.absent.join(", ")}.`);
+  if (r.stopwords.length) parts.push(`Stopwords (not indexed): ${r.stopwords.join(", ")}.`);
+  if (fromSet && !r.answerable) parts.push("This question is unanswerable: no chunk holds its answer.");
+  $("qwords-summary").textContent = parts.join(" ");
+
+  const body = $("qwords-table").querySelector("tbody");
+  body.innerHTML = "";
+  for (const w of r.words) {
+    const row = document.createElement("tr");
+    row.classList.toggle("absent-word", w.chunk_count === 0);
+    const share = (w.chunk_share * 100).toFixed(1);
+    let inEvidence = "–";
+    if (fromSet && r.evidence_chunks.length) {
+      inEvidence = w.in_evidence.length
+        ? `<span class="yes">yes</span> (${w.in_evidence.length}/${r.evidence_chunks.length})`
+        : `<span class="no">no</span>`;
+    }
+    row.innerHTML = `<td><button type="button" class="link"></button></td><td class="num">${w.count}</td>
+      <td class="num">${w.chunk_count} (${share}%)</td><td>${inEvidence}</td>`;
+    row.querySelector("button").textContent = w.word;
+    row.querySelector("button").title = "Show the chunks that contain this word (corpus mode)";
+    row.querySelector("button").addEventListener("click", () => {
+      document.querySelector('.mode[data-mode="corpus"]').click();
+      showWord(w.word);
+    });
+    body.append(row);
+  }
+
+  const words = new Set(r.words.map((w) => w.word));
+  $("qwords-evidence").classList.toggle("hidden", r.evidence_chunks.length === 0);
+  $("qwords-evidence-list").innerHTML = "";
+  for (const c of r.evidence_chunks) {
+    $("qwords-evidence-list").append(chunkListItem(c, words, "answer"));
+  }
+}
+
+// Clear what belongs to the previous corpus when the corpus changes.
+$("corpus").addEventListener("change", () => {
+  ["word-result", "qwords-result", "words-message"].forEach((id) => $(id).classList.add("hidden"));
+  $("vocab-table").classList.add("hidden");
+  $("vocab-stats").textContent = "";
+  $("qwords-text").value = "";
+  vocabularyCorpus = null;
+  if (!$("tab-words").classList.contains("hidden")) loadVocabulary();
+});
+
+// The vocabulary is loaded the first time the Words tab is opened (not on page load: nobody may need it).
+document.querySelector('.tab[data-tab="words"]').addEventListener("click", () => {
+  if (vocabularyCorpus !== corpus()) loadVocabulary();
+});
 
 // --- Start -------------------------------------------------------------------
 // The corpus list comes first: every other call needs a corpus.

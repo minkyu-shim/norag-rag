@@ -101,6 +101,23 @@ th { font-size: 13px; color: var(--muted); font-weight: normal; }
 #chunk-close { position: absolute; top: 12px; right: 12px; background: none; color: var(--muted); border: none; font-size: 22px; }
 #chunk-text { white-space: pre-wrap; font: 14px/1.6 Georgia, serif; background: var(--bg); padding: 12px; border-radius: 6px; }
 
+/* V2: Words tab */
+input[type=search], select { font: inherit; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); color: var(--text); }
+#vocab-form input, #word-form input { flex: 1; min-width: 180px; }
+#word-form { margin-top: 20px; }
+.mode-switch { margin-bottom: 12px; }
+.mode { background: var(--surface); color: var(--text); border-color: var(--border); }
+.mode.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.vocab-scroll { max-height: 360px; overflow-y: auto; }
+.vocab-scroll table { margin-top: 0; }
+.vocab-scroll thead th { position: sticky; top: 0; background: var(--surface); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.link { background: none; border: none; color: var(--accent); padding: 0; text-decoration: underline; }
+.stack { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.yes { color: var(--ok); } .no { color: var(--err); } .absent-word td:first-child { color: var(--err); }
+mark { background: #ffe58f; color: inherit; padding: 0 1px; }
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #1b1b1a; --surface: #252523; --text: #ecece8; --muted: #a3a39c; --border: #3a3a37;
@@ -108,6 +125,8 @@ th { font-size: 13px; color: var(--muted); font-weight: normal; }
     --ok-bg: #1e3324; --ok: #9fd8ac; --warn-bg: #3a2f14; --warn: #f0c870; --err-bg: #3d1f1c; --err: #f2a59d;
     --cited: #1f2d3b;
   }
-  button { color: #10202f; }
-  .tab, button.danger, #chunk-close { color: var(--text); }
+  button, .mode.active { color: #10202f; }
+  mark { background: #6b5a1e; }
+  .tab, .mode, button.danger, #chunk-close { color: var(--text); }
+  .link { color: var(--accent); }
 }

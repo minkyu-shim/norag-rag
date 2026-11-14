@@ -116,6 +116,14 @@ class AskResponse(BaseModel):
     cost: Cost = Cost()
 
 
+# --- Words analytics (V2) --------------------------------------------------------
+class WordsQuestionRequest(BaseModel):
+    corpus: CorpusName
+    # Either a free question, or the id of a question of the set (then its evidence chunks are shown too).
+    question: str = Field(default="", max_length=2000)
+    question_id: str | None = None
+
+
 # --- Documents ---------------------------------------------------------------
 class DocumentInfo(BaseModel):
     name: str

@@ -2,9 +2,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from app import documents, store, rag, graph, graph_retrieval
+from typing import Literal
+from app import documents, store, rag, graph, graph_retrieval, words
 from app.config import WEB_DIR, CORPORA
-from app.schemas import Settings, SettingsResponse, AskRequest, AskResponse, DocumentInfo, CorpusName
+from app.schemas import (Settings, SettingsResponse, AskRequest, AskResponse, DocumentInfo, CorpusName,
+                         WordsQuestionRequest)
 from app.settings import load_settings, save_settings
 
 # The web API. Both phases of RAG are behind it:
@@ -124,6 +126,38 @@ def ask(request: AskRequest):
     # Even on an error status (429, 502...) the body is a full AskResponse,
     # so the UI can show the message AND the chunks that were retrieved.
     return JSONResponse(status_code=http_status, content=response.model_dump())
+
+
+# --- Words analytics (V2) ---------------------------------------------------------
+# Corpus mode: vocabulary, and word -> chunks. Question mode: question -> words. See app/words.py.
+def words_call(function, *args, **kwargs):
+    try:
+        return function(*args, **kwargs)
+    except words.WordsNotReadyError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/words/vocabulary")
+def words_vocabulary(corpus: CorpusName, contains: str = "", order: Literal["frequent", "rare", "alpha"] = "frequent",
+                     limit: int = 200):
+    return words_call(words.vocabulary, corpus, load_settings(), contains, order, min(max(limit, 1), 2000))
+
+
+@app.get("/api/words/word")
+def words_word(corpus: CorpusName, word: str):
+    return words_call(words.word_chunks, corpus, load_settings(), word)
+
+
+@app.get("/api/words/questions")
+def words_questions(corpus: CorpusName):
+    return words.question_set(corpus)
+
+
+@app.post("/api/words/question")
+def words_question(request: WordsQuestionRequest):
+    if not request.question.strip() and not request.question_id:
+        raise HTTPException(status_code=422, detail="Type a question or pick one from the question set.")
+    return words_call(words.question_words, request.corpus, load_settings(), request.question, request.question_id)
 
 
 # The UI. Mounted last, so that it does not hide the /api routes.
