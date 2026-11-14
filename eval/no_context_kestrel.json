@@ -13,7 +13,7 @@
       "model_answer": "I do not have specific documentation regarding an error code KST-2044 for Kestrel Analytics. Please contact their technical support team directly for assistance with this error.",
       "model_says_known": false,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": false
     },
     {
       "id": "q02",
@@ -24,7 +24,8 @@
       "model_answer": "The KST-4012 error typically indicates that the user's invitation token has expired or has already been used, and support should advise them to request a new invitation link from their administrator.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": false,
+      "note": "Invented cause (expired token). Real cause: no free seat."
     },
     {
       "id": "q03",
@@ -35,7 +36,7 @@
       "model_answer": "I do not have specific internal documentation regarding the step-by-step payment failure process for Kestrel Analytics, so I cannot provide an accurate answer.",
       "model_says_known": false,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": false
     },
     {
       "id": "q04",
@@ -46,7 +47,7 @@
       "model_answer": "I do not have specific information regarding which Kestrel Analytics plans include single sign-on or the administrative steps for its setup.",
       "model_says_known": false,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": false
     },
     {
       "id": "q05",
@@ -57,7 +58,8 @@
       "model_answer": "If you have lost access to your multi-factor authentication device, please contact your company's internal IT administrator or Kestrel Analytics support to reset your credentials.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": false,
+      "note": "Generic 'contact IT/support'. Misses the backup code and the Admin reset."
     },
     {
       "id": "q06",
@@ -68,7 +70,7 @@
       "model_answer": "I do not have specific information regarding the refund policy for Kestrel Analytics annual plans, so I cannot confirm if a refund is available 45 days after renewal.",
       "model_says_known": false,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": false
     },
     {
       "id": "q07",
@@ -79,7 +81,7 @@
       "model_answer": "I do not have specific information regarding the discount percentage or exact savings for annual versus monthly plans for Kestrel Analytics.",
       "model_says_known": false,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": false
     },
     {
       "id": "q08",
@@ -90,7 +92,7 @@
       "model_answer": "I do not have specific information regarding error code KST-5031 for Kestrel Analytics, so I cannot identify the appropriate support team or contact method.",
       "model_says_known": false,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": false
     },
     {
       "id": "q09",
@@ -101,7 +103,8 @@
       "model_answer": "Kestrel Analytics focuses on web-based business intelligence dashboards, and there is no dedicated mobile app available for iPhone.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": false,
+      "note": "Asserts there is no app: a plausible guess, not 'not in the documents'."
     },
     {
       "id": "q10",
@@ -112,7 +115,30 @@
       "model_answer": "I do not know the specific monthly cost per seat for the Kestrel Analytics Business plan as that information is not publicly disclosed.",
       "model_says_known": false,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true,
+      "note": "Says it does not know: the right answer for an unanswerable question."
+    },
+    {
+      "id": "q11",
+      "type": "two_hop",
+      "answerable": true,
+      "question": "Several customers report error KST-2040 for the same database type at the same time. Which team should support escalate to, and when can that team be reached?",
+      "expected_answer": "Data Integrations, in #oncall-data-integrations. The team is on call 08:00–20:00 (Paris time) on weekdays; outside those hours, escalate to the Platform on-call.",
+      "model_answer": "I do not have specific internal documentation regarding error KST-2040 or internal escalation procedures for Kestrel Analytics. Therefore, I cannot confirm the correct team or their availability.",
+      "model_says_known": false,
+      "error": null,
+      "known_without_rag": false
+    },
+    {
+      "id": "q12",
+      "type": "two_hop",
+      "answerable": true,
+      "question": "A customer's card was declined (KST-6002) and they never update it. How long after the first failed payment does their workspace become read-only?",
+      "expected_answer": "21 days after the first failed attempt (grace period of the current, March 2026 policy; retries happen 1, 3 and 7 days after the first attempt). Then the workspace becomes read-only. The 2025 policy said 14 days.",
+      "model_answer": "I do not have specific internal documentation regarding the KST-6002 error code or the exact grace period for workspace suspension at Kestrel Analytics.",
+      "model_says_known": false,
+      "error": null,
+      "known_without_rag": false
     }
   ]
 }
