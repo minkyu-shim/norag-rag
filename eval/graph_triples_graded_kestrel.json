@@ -1,0 +1,108 @@
+{
+  "corpus": "kestrel",
+  "graph_built": "2026-11-09 10:25:51",
+  "seed": 42,
+  "edges_in_graph": 28,
+  "triples": [
+    {
+      "n": 1,
+      "triple": "Payments Core (Team) --lead--> Jonas Berg (Person)",
+      "quote": "| Payments Core | Jonas Berg | #oncall-payments | 24/7 rotation |",
+      "document": "service-catalog.md",
+      "chunk_id": "service-catalog.md::4",
+      "context": " hours (Paris time) |\n|---|---|---|---|\n| Platform | Samuel Okafor | #oncall-platform | 24/7 rotation |\n| Identity | Priya Raman | #oncall-identity | 24/7 rotation |\n| Data Integrations | Tomasz Wójcik | #oncall-data-integrations | 08:00–20:00, weekdays |\n| Analytics Engine | Léa Fontaine | #oncall-analytics | 24/7 rotation |\n| Messaging | Inès Moreau | #oncall-messaging | 08:00–20:00, weekdays |\n| Payments Core | Jonas Berg | #oncall-payments | 24/7 rotation |\n\nTeams with weekday hours are covered outside those hours by the Platform on-call, who can page the team lead for SEV-1 incidents only.\n\n## 3. Escalation rules\n\n1. Support identifies the service involved, using the error code and the Support Runbook.\n2. Support posts in the on-call channel of the team that owns that service, with the workspace name, the error code, the time, and the severity leve",
+      "grade": null,
+      "note": null
+    },
+    {
+      "n": 2,
+      "triple": "scheduler (Service) --owned_by--> Analytics Engine (Team)",
+      "quote": "Owner: **Analytics Engine**.",
+      "document": "service-catalog.md",
+      "chunk_id": "service-catalog.md::1",
+      "context": "e.\nOwner: **Identity**.\n\n### connector-hub\n\nStores connector credentials (encrypted with per-workspace keys) and opens the connections to customer data sources. All outgoing connections leave through two fixed addresses, 203.0.113.10 and 203.0.113.11.\nOwner: **Data Integrations**.\n\n### query-engine\n\nRuns dataset queries, enforces the 120-second query time limit, and caches results for dashboards.\nOwner: **Analytics Engine**.\n\n### scheduler\n\nTriggers dataset refreshes and scheduled reports at the right time, in the time zone of each schedule. Generates the report PDFs and hands them over for delivery.\nOwner: **Analytics Engine**.\n\n### postroom\n\nSends every e-mail that leaves Kestrel: scheduled reports, invitations, password resets, ownership transfer confirmations and billing notifications. Tracks bounces and removes ",
+      "grade": null,
+      "note": null
+    },
+    {
+      "n": 3,
+      "triple": "gateway (Service) --owned_by--> Platform (Team)",
+      "quote": "Owner: **Platform**.",
+      "document": "service-catalog.md",
+      "chunk_id": "service-catalog.md::0",
+      "context": "responsible for the service's on-call rotation, its alerts and its runbook entries. When in doubt about who owns something, ask in #platform-help.\n\n## 1. Services\n\n### gateway\n\nPublic entry point for the web app and the public API. Handles TLS, rate limiting and request routing to the other services. Rate limit: 600 API requests per minute per workspace; requests above the limit receive HTTP 429.\nOwner: **Platform**.\n\n### auth\n\nSign-in with password, two-factor authentication, single sign-on (SAML) and SCIM provisioning. Issues the session tokens used by every other service.\nOwner: **Identity**.\n\n### connector-hub\n\nStores connector credentials (encrypted with per-workspace keys) and opens the connections to customer data sources. All outgoing connections leave through two fixed addresses, 203.0.113.10 and 203",
+      "grade": null,
+      "note": null
+    },
+    {
+      "n": 4,
+      "triple": "KST-2044 (ErrorCode) --escalate_to--> Data Integrations (Team)",
+      "quote": "Escalate: to Data Integrations if several customers report it for the same source type at the same time.",
+      "document": "support-runbook-errors.md",
+      "chunk_id": "support-runbook-errors.md::4",
+      "context": "or persists.\n\n## Connectors (KST-2xxx)\n\n### KST-2040 — Connection timed out\n\n**User sees:** \"Kestrel could not reach your data source in time.\"\n**Cause:** the database is down, overloaded, or behind a firewall that silently drops the connection.\n**Support action:** ask the customer to confirm the database is reachable from outside their network, on the host and port configured in the connector.\n**Escalate:** to Data Integrations if several customers report it for the same source type at the same time.\n\n### KST-2044 — Source refused the connection\n\n**User sees:** \"Your data source refused the connection from Kestrel.\"\n**Cause:** the database only accepts connections from an allowlist of IP addresses, and the Kestrel addresses are missing from it.\n**Support action:** ask the customer to add both 203.0.113.10 and 203.0.113.11 to the allowlist of their database or firewall. Adding only one of them",
+      "grade": null,
+      "note": null
+    },
+    {
+      "n": 5,
+      "triple": "Platform (Team) --lead--> Samuel Okafor (Person)",
+      "quote": "| Platform | Samuel Okafor | #oncall-platform | 24/7 rotation |",
+      "document": "service-catalog.md",
+      "chunk_id": "service-catalog.md::3",
+      "context": "f the Billing and Refund Policy. Talks to the payment processor; never stores full card numbers.\nOwner: **Payments Core**.\n\n### audit-log\n\nRecords security-relevant events (sign-ins, role changes, connector edits, exports) for workspaces on Business and Enterprise plans.\nOwner: **Identity**.\n\n## 2. Teams\n\n| Team | Engineering lead | On-call channel | Working hours (Paris time) |\n|---|---|---|---|\n| Platform | Samuel Okafor | #oncall-platform | 24/7 rotation |\n| Identity | Priya Raman | #oncall-identity | 24/7 rotation |\n| Data Integrations | Tomasz Wójcik | #oncall-data-integrations | 08:00–20:00, weekdays |\n| Analytics Engine | Léa Fontaine | #oncall-analytics | 24/7 rotation |\n| Messaging | Inès Moreau | #oncall-messaging | 08:00–20:00, weekdays |\n| Payments Core | Jonas Berg | #oncall-payments | 24/7 rotation |\n\nTeams with weekday hours are covered",
+      "grade": null,
+      "note": null
+    },
+    {
+      "n": 6,
+      "triple": "audit-log (Service) --owned_by--> Identity (Team)",
+      "quote": "Owner: **Identity**.",
+      "document": "service-catalog.md",
+      "chunk_id": "service-catalog.md::3",
+      "context": "ces and payments. Generates invoice PDFs, runs the automatic payment retries, and applies the grace period and read-only rules of the Billing and Refund Policy. Talks to the payment processor; never stores full card numbers.\nOwner: **Payments Core**.\n\n### audit-log\n\nRecords security-relevant events (sign-ins, role changes, connector edits, exports) for workspaces on Business and Enterprise plans.\nOwner: **Identity**.\n\n## 2. Teams\n\n| Team | Engineering lead | On-call channel | Working hours (Paris time) |\n|---|---|---|---|\n| Platform | Samuel Okafor | #oncall-platform | 24/7 rotation |\n| Identity | Priya Raman | #oncall-identity | 24/7 rotation |\n| Data Integrations | Tomasz Wójcik | #oncall-data-integrations | 08:00–20:00, weekdays |\n| Analytics Engine | Léa Fontaine | #oncall-analytics | 24/7 rotation |\n| Me",
+      "grade": null,
+      "note": null
+    },
+    {
+      "n": 7,
+      "triple": "KST-1012 (ErrorCode) --escalate_to--> Identity (Team)",
+      "quote": "Escalate: to Identity if the metadata is correct and the error persists.",
+      "document": "support-runbook-errors.md",
+      "chunk_id": "support-runbook-errors.md::3",
+      "context": "ification).\n**Escalate:** no.\n\n### KST-1012 — SSO response rejected\n\n**User sees:** \"Your identity provider returned an invalid response.\"\n**Cause:** the identity provider certificate has expired or was rotated, or the clock of the identity provider is out of sync.\n**Support action:** ask a workspace Admin to upload the new identity provider metadata in **Settings → Security → Single sign-on**.\n**Escalate:** to Identity if the metadata is correct and the error persists.\n\n## Connectors (KST-2xxx)\n\n### KST-2040 — Connection timed out\n\n**User sees:** \"Kestrel could not reach your data source in time.\"\n**Cause:** the database is down, overloaded, or behind a firewall that silently drops the connection.\n**Support action:** ask the customer to confirm the database is reachable from outside their network, on the host and port configured in the connector.\n**Escalate:** ",
+      "grade": null,
+      "note": null
+    },
+    {
+      "n": 8,
+      "triple": "postroom (Service) --owned_by--> Messaging (Team)",
+      "quote": "Owner: **Messaging**.",
+      "document": "service-catalog.md",
+      "chunk_id": "service-catalog.md::2",
+      "context": "duled reports at the right time, in the time zone of each schedule. Generates the report PDFs and hands them over for delivery.\nOwner: **Analytics Engine**.\n\n### postroom\n\nSends every e-mail that leaves Kestrel: scheduled reports, invitations, password resets, ownership transfer confirmations and billing notifications. Tracks bounces and removes a recipient from a schedule after three rejections.\nOwner: **Messaging**.\n\npostroom replaced the older mailman service in November 2025. mailman is switched off; old alerts or documents that mention it refer to postroom today.\n\n### embed-svc\n\nIssues and checks embed tokens for dashboards embedded in customer applications.\nOwner: **Platform**.\n\n### ledger\n\nSubscriptions, seats, invoices and payments. Generates invoice PDFs, runs the automatic payment retries, and applie",
+      "grade": null,
+      "note": null
+    },
+    {
+      "n": 9,
+      "triple": "KST-5031 (ErrorCode) --escalate_to--> postroom (Service)",
+      "quote": "escalate to the team that owns postroom",
+      "document": "support-runbook-errors.md",
+      "chunk_id": "support-runbook-errors.md::8",
+      "context": " A single occurrence is usually a temporary problem with a recipient's mail server.\n**Support action:** check whether the recipient's address is correct and whether the next delivery succeeds. Ask the customer to check that messages from kestrel.example are not blocked by their mail filter.\n**Escalate:** if the error happens on two consecutive deliveries, or for several customers on the same day, escalate to the team that owns postroom, as SEV-2.\n\n### KST-5038 — Embed token expired\n\n**User sees:** an embedded dashboard shows \"This link has expired\".\n**Cause:** the embed token passed by the customer's application is older than its lifetime (24 hours by default).\n**Support action:** the customer's server must request a new token before the old one expires. On Business and Enterprise, the lifetime can be raised up to 30 days.\n**Es",
+      "grade": null,
+      "note": null
+    },
+    {
+      "n": 10,
+      "triple": "Messaging (Team) --on_call_channel--> #oncall-messaging (Channel)",
+      "quote": "| Messaging | Inès Moreau | #oncall-messaging | 08:00–20:00, weekdays |",
+      "document": "service-catalog.md",
+      "chunk_id": "service-catalog.md::3",
+      "context": "y**.\n\n## 2. Teams\n\n| Team | Engineering lead | On-call channel | Working hours (Paris time) |\n|---|---|---|---|\n| Platform | Samuel Okafor | #oncall-platform | 24/7 rotation |\n| Identity | Priya Raman | #oncall-identity | 24/7 rotation |\n| Data Integrations | Tomasz Wójcik | #oncall-data-integrations | 08:00–20:00, weekdays |\n| Analytics Engine | Léa Fontaine | #oncall-analytics | 24/7 rotation |\n| Messaging | Inès Moreau | #oncall-messaging | 08:00–20:00, weekdays |\n| Payments Core | Jonas Berg | #oncall-payments | 24/7 rotation |\n\nTeams with weekday hours are covered outside those hours by the Platform on-call, who can page the team lead for SEV-1 incidents only.\n\n## 3. Escalation rules\n\n1. Support identifies the service involved, using the error code and the Support Runbook.\n2. Support posts in the on-call channel of the team that owns that service, with t",
+      "grade": null,
+      "note": null
+    }
+  ]
+}
