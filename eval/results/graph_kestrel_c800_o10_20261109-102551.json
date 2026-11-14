@@ -1,0 +1,711 @@
+{
+ "corpus": "kestrel",
+ "date": "2026-11-09 10:25:51",
+ "settings": {
+  "chunk_size": 800,
+  "overlap_percent": 10,
+  "model": "gemini-3.1-flash-lite",
+  "prompt_version": 2
+ },
+ "cost": {
+  "retrieval_ms": 0,
+  "llm_calls": 0,
+  "prompt_tokens": 0,
+  "completion_tokens": 0,
+  "llm_ms": 0,
+  "seconds": 0.0,
+  "chunks": 43,
+  "cached_chunks": 43,
+  "failed_chunks": []
+ },
+ "triples": {
+  "raw": 28,
+  "valid": 28,
+  "dropped": {}
+ },
+ "entities": {
+  "surface_names": 32,
+  "nodes_after_merge": 32,
+  "merges": [],
+  "cross_chunk_merges": [
+   {
+    "node": "Team:platform",
+    "chunks": [
+     "service-catalog.md::0",
+     "service-catalog.md::2",
+     "service-catalog.md::3"
+    ]
+   },
+   {
+    "node": "Team:data integrations",
+    "chunks": [
+     "service-catalog.md::1",
+     "service-catalog.md::3",
+     "support-runbook-errors.md::4"
+    ]
+   },
+   {
+    "node": "Team:analytics engine",
+    "chunks": [
+     "service-catalog.md::1",
+     "service-catalog.md::3"
+    ]
+   },
+   {
+    "node": "Service:postroom",
+    "chunks": [
+     "service-catalog.md::2",
+     "support-runbook-errors.md::8"
+    ]
+   },
+   {
+    "node": "Team:messaging",
+    "chunks": [
+     "service-catalog.md::2",
+     "service-catalog.md::3"
+    ]
+   },
+   {
+    "node": "Team:identity",
+    "chunks": [
+     "service-catalog.md::3",
+     "support-runbook-errors.md::3"
+    ]
+   },
+   {
+    "node": "Team:payments core",
+    "chunks": [
+     "service-catalog.md::3",
+     "service-catalog.md::4",
+     "support-runbook-errors.md::10"
+    ]
+   },
+   {
+    "node": "Person:jonas berg",
+    "chunks": [
+     "service-catalog.md::3",
+     "service-catalog.md::4"
+    ]
+   },
+   {
+    "node": "Channel:oncall-payments",
+    "chunks": [
+     "service-catalog.md::3",
+     "service-catalog.md::4"
+    ]
+   }
+  ],
+  "type_conflicts": {}
+ },
+ "graph_stats": {
+  "nodes": 32,
+  "edges": 28,
+  "relations": {
+   "owned_by": 7,
+   "replaced": 1,
+   "lead": 7,
+   "on_call_channel": 7,
+   "escalate_to": 5,
+   "raised_by": 1
+  }
+ },
+ "dropped": [],
+ "graph": {
+  "nodes": [
+   {
+    "id": "Channel:oncall-analytics",
+    "type": "Channel",
+    "name": "#oncall-analytics",
+    "aliases": [
+     "#oncall-analytics"
+    ]
+   },
+   {
+    "id": "Channel:oncall-data-integrations",
+    "type": "Channel",
+    "name": "#oncall-data-integrations",
+    "aliases": [
+     "#oncall-data-integrations"
+    ]
+   },
+   {
+    "id": "Channel:oncall-identity",
+    "type": "Channel",
+    "name": "#oncall-identity",
+    "aliases": [
+     "#oncall-identity"
+    ]
+   },
+   {
+    "id": "Channel:oncall-messaging",
+    "type": "Channel",
+    "name": "#oncall-messaging",
+    "aliases": [
+     "#oncall-messaging"
+    ]
+   },
+   {
+    "id": "Channel:oncall-payments",
+    "type": "Channel",
+    "name": "#oncall-payments",
+    "aliases": [
+     "#oncall-payments"
+    ]
+   },
+   {
+    "id": "Channel:oncall-platform",
+    "type": "Channel",
+    "name": "#oncall-platform",
+    "aliases": [
+     "#oncall-platform"
+    ]
+   },
+   {
+    "id": "ErrorCode:kst-1012",
+    "type": "ErrorCode",
+    "name": "KST-1012",
+    "aliases": [
+     "KST-1012"
+    ]
+   },
+   {
+    "id": "ErrorCode:kst-2044",
+    "type": "ErrorCode",
+    "name": "KST-2044",
+    "aliases": [
+     "KST-2044"
+    ]
+   },
+   {
+    "id": "ErrorCode:kst-3012",
+    "type": "ErrorCode",
+    "name": "KST-3012",
+    "aliases": [
+     "KST-3012"
+    ]
+   },
+   {
+    "id": "ErrorCode:kst-5031",
+    "type": "ErrorCode",
+    "name": "KST-5031",
+    "aliases": [
+     "KST-5031"
+    ]
+   },
+   {
+    "id": "ErrorCode:kst-6010",
+    "type": "ErrorCode",
+    "name": "KST-6010",
+    "aliases": [
+     "KST-6010"
+    ]
+   },
+   {
+    "id": "Person:ines moreau",
+    "type": "Person",
+    "name": "Inès Moreau",
+    "aliases": [
+     "Inès Moreau"
+    ]
+   },
+   {
+    "id": "Person:jonas berg",
+    "type": "Person",
+    "name": "Jonas Berg",
+    "aliases": [
+     "Jonas Berg"
+    ]
+   },
+   {
+    "id": "Person:lea fontaine",
+    "type": "Person",
+    "name": "Léa Fontaine",
+    "aliases": [
+     "Léa Fontaine"
+    ]
+   },
+   {
+    "id": "Person:priya raman",
+    "type": "Person",
+    "name": "Priya Raman",
+    "aliases": [
+     "Priya Raman"
+    ]
+   },
+   {
+    "id": "Person:samuel okafor",
+    "type": "Person",
+    "name": "Samuel Okafor",
+    "aliases": [
+     "Samuel Okafor"
+    ]
+   },
+   {
+    "id": "Person:tomasz wojcik",
+    "type": "Person",
+    "name": "Tomasz Wójcik",
+    "aliases": [
+     "Tomasz Wójcik"
+    ]
+   },
+   {
+    "id": "Service:audit-log",
+    "type": "Service",
+    "name": "audit-log",
+    "aliases": [
+     "audit-log"
+    ]
+   },
+   {
+    "id": "Service:connector-hub",
+    "type": "Service",
+    "name": "connector-hub",
+    "aliases": [
+     "connector-hub"
+    ]
+   },
+   {
+    "id": "Service:embed-svc",
+    "type": "Service",
+    "name": "embed-svc",
+    "aliases": [
+     "embed-svc"
+    ]
+   },
+   {
+    "id": "Service:gateway",
+    "type": "Service",
+    "name": "gateway",
+    "aliases": [
+     "gateway"
+    ]
+   },
+   {
+    "id": "Service:mailman",
+    "type": "Service",
+    "name": "mailman",
+    "aliases": [
+     "mailman"
+    ]
+   },
+   {
+    "id": "Service:postroom",
+    "type": "Service",
+    "name": "postroom",
+    "aliases": [
+     "postroom"
+    ]
+   },
+   {
+    "id": "Service:query-engine",
+    "type": "Service",
+    "name": "query-engine",
+    "aliases": [
+     "query-engine"
+    ]
+   },
+   {
+    "id": "Service:scheduler",
+    "type": "Service",
+    "name": "scheduler",
+    "aliases": [
+     "scheduler"
+    ]
+   },
+   {
+    "id": "Team:analytics eng",
+    "type": "Team",
+    "name": "Analytics Eng",
+    "aliases": [
+     "Analytics Eng"
+    ]
+   },
+   {
+    "id": "Team:analytics engine",
+    "type": "Team",
+    "name": "Analytics Engine",
+    "aliases": [
+     "Analytics Engine"
+    ]
+   },
+   {
+    "id": "Team:data integrations",
+    "type": "Team",
+    "name": "Data Integrations",
+    "aliases": [
+     "Data Integrations"
+    ]
+   },
+   {
+    "id": "Team:identity",
+    "type": "Team",
+    "name": "Identity",
+    "aliases": [
+     "Identity"
+    ]
+   },
+   {
+    "id": "Team:messaging",
+    "type": "Team",
+    "name": "Messaging",
+    "aliases": [
+     "Messaging"
+    ]
+   },
+   {
+    "id": "Team:payments core",
+    "type": "Team",
+    "name": "Payments Core",
+    "aliases": [
+     "Payments Core"
+    ]
+   },
+   {
+    "id": "Team:platform",
+    "type": "Team",
+    "name": "Platform",
+    "aliases": [
+     "Platform"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "source": "Service:gateway",
+    "relation": "owned_by",
+    "target": "Team:platform",
+    "quote": "Owner: **Platform**.",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::0",
+    "span": [
+     633,
+     653
+    ]
+   },
+   {
+    "source": "Service:connector-hub",
+    "relation": "owned_by",
+    "target": "Team:data integrations",
+    "quote": "Owner: **Data Integrations**.",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::1",
+    "span": [
+     1064,
+     1093
+    ]
+   },
+   {
+    "source": "Service:query-engine",
+    "relation": "owned_by",
+    "target": "Team:analytics engine",
+    "quote": "Owner: **Analytics Engine**.",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::1",
+    "span": [
+     1212,
+     1240
+    ]
+   },
+   {
+    "source": "Service:scheduler",
+    "relation": "owned_by",
+    "target": "Team:analytics engine",
+    "quote": "Owner: **Analytics Engine**.",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::1",
+    "span": [
+     1212,
+     1240
+    ]
+   },
+   {
+    "source": "Service:postroom",
+    "relation": "owned_by",
+    "target": "Team:messaging",
+    "quote": "Owner: **Messaging**.",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::2",
+    "span": [
+     1692,
+     1713
+    ]
+   },
+   {
+    "source": "Service:postroom",
+    "relation": "replaced",
+    "target": "Service:mailman",
+    "quote": "postroom replaced the older mailman service in November 2025.",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::2",
+    "span": [
+     1715,
+     1776
+    ]
+   },
+   {
+    "source": "Service:embed-svc",
+    "relation": "owned_by",
+    "target": "Team:platform",
+    "quote": "Owner: **Platform**.",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::2",
+    "span": [
+     1964,
+     1984
+    ]
+   },
+   {
+    "source": "Service:audit-log",
+    "relation": "owned_by",
+    "target": "Team:identity",
+    "quote": "Owner: **Identity**.",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2425,
+     2445
+    ]
+   },
+   {
+    "source": "Team:platform",
+    "relation": "lead",
+    "target": "Person:samuel okafor",
+    "quote": "| Platform | Samuel Okafor | #oncall-platform | 24/7 rotation |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2553,
+     2616
+    ]
+   },
+   {
+    "source": "Team:platform",
+    "relation": "on_call_channel",
+    "target": "Channel:oncall-platform",
+    "quote": "| Platform | Samuel Okafor | #oncall-platform | 24/7 rotation |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2553,
+     2616
+    ]
+   },
+   {
+    "source": "Team:identity",
+    "relation": "lead",
+    "target": "Person:priya raman",
+    "quote": "| Identity | Priya Raman | #oncall-identity | 24/7 rotation |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2617,
+     2678
+    ]
+   },
+   {
+    "source": "Team:identity",
+    "relation": "on_call_channel",
+    "target": "Channel:oncall-identity",
+    "quote": "| Identity | Priya Raman | #oncall-identity | 24/7 rotation |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2617,
+     2678
+    ]
+   },
+   {
+    "source": "Team:data integrations",
+    "relation": "lead",
+    "target": "Person:tomasz wojcik",
+    "quote": "| Data Integrations | Tomasz Wójcik | #oncall-data-integrations | 08:00–20:00, weekdays |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2679,
+     2768
+    ]
+   },
+   {
+    "source": "Team:data integrations",
+    "relation": "on_call_channel",
+    "target": "Channel:oncall-data-integrations",
+    "quote": "| Data Integrations | Tomasz Wójcik | #oncall-data-integrations | 08:00–20:00, weekdays |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2679,
+     2768
+    ]
+   },
+   {
+    "source": "Team:analytics engine",
+    "relation": "lead",
+    "target": "Person:lea fontaine",
+    "quote": "| Analytics Engine | Léa Fontaine | #oncall-analytics | 24/7 rotation |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2769,
+     2840
+    ]
+   },
+   {
+    "source": "Team:analytics engine",
+    "relation": "on_call_channel",
+    "target": "Channel:oncall-analytics",
+    "quote": "| Analytics Engine | Léa Fontaine | #oncall-analytics | 24/7 rotation |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2769,
+     2840
+    ]
+   },
+   {
+    "source": "Team:messaging",
+    "relation": "lead",
+    "target": "Person:ines moreau",
+    "quote": "| Messaging | Inès Moreau | #oncall-messaging | 08:00–20:00, weekdays |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2841,
+     2912
+    ]
+   },
+   {
+    "source": "Team:messaging",
+    "relation": "on_call_channel",
+    "target": "Channel:oncall-messaging",
+    "quote": "| Messaging | Inès Moreau | #oncall-messaging | 08:00–20:00, weekdays |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2841,
+     2912
+    ]
+   },
+   {
+    "source": "Team:payments core",
+    "relation": "lead",
+    "target": "Person:jonas berg",
+    "quote": "| Payments Core | Jonas Berg | #oncall-payments",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2913,
+     2960
+    ]
+   },
+   {
+    "source": "Team:payments core",
+    "relation": "on_call_channel",
+    "target": "Channel:oncall-payments",
+    "quote": "| Payments Core | Jonas Berg | #oncall-payments",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::3",
+    "span": [
+     2913,
+     2960
+    ]
+   },
+   {
+    "source": "Team:payments core",
+    "relation": "lead",
+    "target": "Person:jonas berg",
+    "quote": "| Payments Core | Jonas Berg | #oncall-payments | 24/7 rotation |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::4",
+    "span": [
+     2913,
+     2978
+    ]
+   },
+   {
+    "source": "Team:payments core",
+    "relation": "on_call_channel",
+    "target": "Channel:oncall-payments",
+    "quote": "| Payments Core | Jonas Berg | #oncall-payments | 24/7 rotation |",
+    "document": "service-catalog.md",
+    "chunk_id": "service-catalog.md::4",
+    "span": [
+     2913,
+     2978
+    ]
+   },
+   {
+    "source": "ErrorCode:kst-1012",
+    "relation": "escalate_to",
+    "target": "Team:identity",
+    "quote": "Escalate: to Identity if the metadata is correct and the error persists.",
+    "document": "support-runbook-errors.md",
+    "chunk_id": "support-runbook-errors.md::3",
+    "span": [
+     2591,
+     2665
+    ]
+   },
+   {
+    "source": "ErrorCode:kst-2044",
+    "relation": "escalate_to",
+    "target": "Team:data integrations",
+    "quote": "Escalate: to Data Integrations if several customers report it for the same source type at the same time.",
+    "document": "support-runbook-errors.md",
+    "chunk_id": "support-runbook-errors.md::4",
+    "span": [
+     3053,
+     3159
+    ]
+   },
+   {
+    "source": "ErrorCode:kst-3012",
+    "relation": "escalate_to",
+    "target": "Team:analytics eng",
+    "quote": "Escalate: to Analytics Eng",
+    "document": "support-runbook-errors.md",
+    "chunk_id": "support-runbook-errors.md::5",
+    "span": [
+     4372,
+     4400
+    ]
+   },
+   {
+    "source": "ErrorCode:kst-5031",
+    "relation": "raised_by",
+    "target": "Service:postroom",
+    "quote": "This error is raised by postroom, the service that sends all Kestrel e-mails.",
+    "document": "support-runbook-errors.md",
+    "chunk_id": "support-runbook-errors.md::8",
+    "span": [
+     5942,
+     6019
+    ]
+   },
+   {
+    "source": "ErrorCode:kst-5031",
+    "relation": "escalate_to",
+    "target": "Service:postroom",
+    "quote": "escalate to the team that owns postroom",
+    "document": "support-runbook-errors.md",
+    "chunk_id": "support-runbook-errors.md::8",
+    "span": [
+     6419,
+     6458
+    ]
+   },
+   {
+    "source": "ErrorCode:kst-6010",
+    "relation": "escalate_to",
+    "target": "Team:payments core",
+    "quote": "**Escalate:** to Payments Core if more than three customers are affected on the same day (possible incident).",
+    "document": "support-runbook-errors.md",
+    "chunk_id": "support-runbook-errors.md::10",
+    "span": [
+     7787,
+     7894
+    ]
+   }
+  ]
+ }
+}

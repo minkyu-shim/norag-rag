@@ -1,7 +1,7 @@
 import time
-from app import store, documents, bm25
+from app import store, documents, bm25, graph_retrieval
 from app.llm import ask_llm_for_answer, ProviderError, InvalidOutputError
-from app.schemas import AskResponse, ChunkRef, Cost
+from app.schemas import AskResponse, ChunkRef, Cost, GraphPath
 
 # The answering phase, run for every question:
 #   question -> each retriever that is ON -> RRF fusion -> top-k chunks -> LLM -> validated answer
@@ -50,6 +50,7 @@ def dense_retrieve(corpus, question, sources, settings, n):
 RETRIEVERS = {
     "dense": dense_retrieve,
     "bm25": bm25.retrieve,
+    "graph": graph_retrieval.retrieve,
 }
 
 
@@ -134,7 +135,7 @@ QUESTION:
 
 
 # --- The whole answering phase ------------------------------------------------
-def check_ready(corpus, sources, settings):
+def check_ready(corpus, sources, settings, retrievers):
     existing = {p.name for p in documents.list_document_paths(corpus)}
     unknown = [s for s in sources if s not in existing]
     if unknown:
@@ -146,6 +147,8 @@ def check_ready(corpus, sources, settings):
             f"Not indexed for chunk size {settings.chunk_size} / overlap {settings.overlap_percent}%: "
             f"{', '.join(not_indexed)}. Click 'Re-index'."
         )
+    if "graph" in retrievers and not graph_retrieval.is_available(corpus):
+        raise NotReadyError(f"No concept graph for corpus {corpus!r}: run  python scripts/build_graph.py {corpus}")
 
 
 def normalize_label(label):
@@ -155,11 +158,17 @@ def normalize_label(label):
 
 def answer(corpus, question, sources, settings, retrievers):
     """Returns (AskResponse, http_status)."""
-    check_ready(corpus, sources, settings)
+    check_ready(corpus, sources, settings, retrievers)
     started = time.perf_counter()
     retrieved, _ = retrieve(corpus, question, sources, settings, retrievers)
     cost = Cost(retrieval_ms=round((time.perf_counter() - started) * 1000, 1))
-    return answer_from_chunks(question, retrieved, retrievers, cost)
+    response, http_status = answer_from_chunks(question, retrieved, retrievers, cost)
+    if "graph" in retrievers:
+        # The walk again, this time for the UI (entities, edges, chunks). It is in memory and costs ~1 ms:
+        # simpler than passing the walk through RRF.
+        path = graph_retrieval.explain(corpus, question, sources, settings)
+        response.graph_path = GraphPath(entities=path["entities"], edges=path["edges"])
+    return response, http_status
 
 
 def answer_from_chunks(question, retrieved, retrievers, cost):

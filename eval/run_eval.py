@@ -6,7 +6,7 @@ from typing import get_args
 # Make "import app..." work when running "python eval/run_eval.py" from the repo root.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app import evaluation, llm  # noqa: E402
+from app import evaluation, llm, graph_retrieval  # noqa: E402
 from app.config import CORPORA, DEFAULT_CHUNK_SIZE, DEFAULT_OVERLAP_PERCENT, DEFAULT_TOP_K  # noqa: E402
 from app.schemas import Settings, RetrieverName, DEFAULT_RETRIEVERS  # noqa: E402
 
@@ -43,6 +43,9 @@ def main():
     # Without a key, every LLM row would be a provider_error: a silently wrong run. Better to stop right away.
     if args.llm and llm.client is None:
         raise SystemExit("--llm needs GOOGLE_API_KEY: create .env from .env.example, or run without --llm.")
+
+    if "graph" in retrievers and not graph_retrieval.is_available(args.corpus):
+        raise SystemExit(f"No concept graph for {args.corpus}: run  python scripts/build_graph.py {args.corpus}")
 
     ks = sorted(int(k) for k in args.k.split(","))
     settings = Settings(chunk_size=args.chunk_size, overlap_percent=args.overlap, top_k=args.top_k)

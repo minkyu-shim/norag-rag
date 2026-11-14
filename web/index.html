@@ -55,6 +55,13 @@
         <p id="cost" class="meta"></p>
         <div id="citations" class="chips"></div>
 
+        <!-- V3: shown when the graph retriever was on -->
+        <div id="graph-path" class="graph-path hidden">
+          <h3>Graph path <small>(entities found in the question → edges followed → chunks)</small></h3>
+          <p id="graph-entities" class="meta"></p>
+          <ol id="graph-edges"></ol>
+        </div>
+
         <h3>Retrieved passages <small>(top-k after RRF fusion — found by: retriever #rank in its own list)</small></h3>
         <ol id="retrieved" class="retrieved"></ol>
       </div>

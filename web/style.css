@@ -83,6 +83,9 @@ h3 small { font-weight: normal; color: var(--muted); }
 .retrieved .found-by { color: var(--accent); font-size: 12px; }
 .retrieved .preview { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+.graph-path ol { font-size: 13px; padding-left: 22px; margin: 4px 0 8px; }
+.graph-path li { margin-bottom: 2px; }
+
 table { width: 100%; border-collapse: collapse; background: var(--surface); margin-top: 12px; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
 th { font-size: 13px; color: var(--muted); font-weight: normal; }

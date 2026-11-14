@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from app import documents, store, rag
+from app import documents, store, rag, graph, graph_retrieval
 from app.config import WEB_DIR, CORPORA
 from app.schemas import Settings, SettingsResponse, AskRequest, AskResponse, DocumentInfo, CorpusName
 from app.settings import load_settings, save_settings
@@ -70,6 +70,17 @@ def put_settings(settings: Settings, corpus: CorpusName):
 @app.post("/api/index")
 def reindex(corpus: CorpusName):
     return {"corpus": corpus, "indexed": documents.index_all(corpus, load_settings())}
+
+
+# --- Concept graph (V3) -----------------------------------------------------------
+@app.get("/api/graph")
+def graph_info(corpus: CorpusName):
+    # Built from the terminal only (python scripts/build_graph.py <corpus>): it takes minutes and LLM calls.
+    if not graph_retrieval.is_available(corpus):
+        return {"corpus": corpus, "available": False}
+    data = graph.load(corpus)
+    return {"corpus": corpus, "available": True, "built": data["built"], "settings": data["settings"],
+            "nodes": len(data["nodes"]), "edges": len(data["edges"])}
 
 
 # --- Documents ---------------------------------------------------------------

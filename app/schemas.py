@@ -79,6 +79,22 @@ AskStatus = Literal[
 ]
 
 
+# V3: what the graph retriever did, shown in the UI when the graph is on.
+class GraphEdge(BaseModel):
+    source: str
+    relation: str
+    target: str
+    hop: int                # 1 = the edge touches an entity of the question
+    quote: str              # the provenance: the passage that states the fact
+    document: str
+    chunk_ids: list[str]    # the chunks (current setting) that contain the quote
+
+
+class GraphPath(BaseModel):
+    entities: list[str]     # the graph entities found in the question (the starting points of the walk)
+    edges: list[GraphEdge]  # the edges followed, hop by hop
+
+
 # V3: what one question cost. Measured for every answer, summed per configuration by the evaluation.
 class Cost(BaseModel):
     retrieval_ms: float = 0
@@ -96,6 +112,7 @@ class AskResponse(BaseModel):
     retrieved: list[ChunkRef] = []
     warnings: list[str] = []
     retrievers: list[str] = []      # V3: the retrievers that were on
+    graph_path: GraphPath | None = None     # V3: only when the graph retriever was on
     cost: Cost = Cost()
 
 

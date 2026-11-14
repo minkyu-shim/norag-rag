@@ -44,7 +44,7 @@ function showBanner(element, text, kind) {
 
 // Settings (index_ready) and documents (chunk counts) both change after an index/upload/delete.
 async function refresh() {
-  await Promise.all([loadSettings(), loadDocuments()]);
+  await Promise.all([loadSettings(), loadDocuments(), loadGraphInfo()]);
 }
 
 // --- Corpus ------------------------------------------------------------------
@@ -203,6 +203,19 @@ function checkedRetrievers() {
   return [...document.querySelectorAll("#retriever-list input")].filter((i) => i.checked).map((i) => i.value);
 }
 
+// The graph checkbox is only usable when a graph was built for this corpus (python scripts/build_graph.py).
+async function loadGraphInfo() {
+  const asked = corpus();
+  const info = await api("GET", withCorpus("/api/graph"));
+  if (asked !== corpus()) return;
+  const box = document.querySelector('#retriever-list input[value="graph"]');
+  box.disabled = !info.available;
+  if (!info.available) box.checked = false;
+  $("graph-option").title = info.available
+    ? `${info.nodes} entities, ${info.edges} relations (built ${info.built})`
+    : "No concept graph for this corpus: run python scripts/build_graph.py " + info.corpus;
+}
+
 // "dense #10 · bm25 #1 · RRF 0.0307": which retriever(s) found the chunk, and at which rank in their own list.
 function foundByText(c) {
   const parts = Object.entries(c.found_by).map(([name, rank]) => `${name} #${rank}`);
@@ -263,6 +276,7 @@ function showError(message) {
   $("result").classList.remove("hidden");
   showBanner($("status-banner"), message, "err");
   ["warnings", "answer", "cost", "citations", "retrieved"].forEach((id) => { $(id).innerHTML = ""; });
+  $("graph-path").classList.add("hidden");
 }
 
 function showResult(r) {
@@ -289,6 +303,8 @@ function showResult(r) {
     $("citations").append(chip);
   }
 
+  showGraphPath(r);
+
   // All retrieved chunks, cited ones highlighted: the user sees what the LLM was given.
   const cited = new Set(r.citations.map((c) => c.id));
   $("retrieved").innerHTML = "";
@@ -304,6 +320,26 @@ function showResult(r) {
     li.querySelector(".preview").textContent = c.text.replace(/\s+/g, " ");
     li.addEventListener("click", () => openChunk(c));
     $("retrieved").append(li);
+  }
+}
+
+// Graph path: entities of the question, then every edge followed (hop by hop) and the chunks of its quote.
+// A chunk id that made it into the final top-k is shown with its label (C2); the others are outside the top-k.
+function showGraphPath(r) {
+  $("graph-path").classList.toggle("hidden", !r.graph_path);
+  if (!r.graph_path) return;
+  const labels = Object.fromEntries(r.retrieved.map((c) => [c.id, c.label]));
+  const p = r.graph_path;
+  $("graph-entities").textContent = p.entities.length
+    ? `Entities found in the question: ${p.entities.join(", ")}`
+    : "No graph entity found in the question: the graph retriever returned nothing.";
+  $("graph-edges").innerHTML = "";
+  for (const e of p.edges) {
+    const li = document.createElement("li");
+    const chunks = e.chunk_ids.map((id) => labels[id] || `${id} (not in top-k)`).join(", ") || "no chunk";
+    li.textContent = `hop ${e.hop}: ${e.source} —${e.relation}→ ${e.target} · ${chunks}`;
+    li.title = `${e.document}: "${e.quote}"`;
+    $("graph-edges").append(li);
   }
 }
 
