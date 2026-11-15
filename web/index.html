@@ -250,6 +250,16 @@
     <pre id="chunk-text"></pre>
   </aside>
 
+  <!-- V4: the trace of an answer (opened by its "Details" button, see trace.js) -->
+  <aside id="trace-panel" class="hidden">
+    <button id="trace-close" aria-label="Close">×</button>
+    <h3 id="trace-title"></h3>
+    <div id="trace-summary" class="trace-summary"></div>
+    <h4>Steps <small>(click a step for its details)</small></h4>
+    <div id="trace-steps"></div>
+  </aside>
+
+  <script src="trace.js"></script>
   <script src="app.js"></script>
   <script src="explorer.js"></script>
 </body>

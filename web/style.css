@@ -183,10 +183,30 @@ button.secondary { background: var(--surface); color: var(--accent); }
   }
   button, .mode.active { color: #10202f; }
   mark { background: #6b5a1e; }
-  .tab, .mode, button.danger, #chunk-close { color: var(--text); }
+  .tab, .mode, button.danger, 
   .link { color: var(--accent); }
   :root { --t-Team: #6fa8d6; --t-Service: #72c08f; --t-ErrorCode: #e8925c; --t-Person: #b49ade;
     --t-Channel: #d4b44a; --t-Plan: #9aa5b3; --t-Feature: #9aa5b3; }
   .type-pill { color: #10202f; }
   button.secondary { color: var(--accent); }
 }
+
+/* V4: the trace panel (web/trace.js) */
+#trace-panel {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(620px, 100%); z-index: 10;
+  background: var(--surface); border-left: 1px solid var(--border);
+  box-shadow: -4px 0 16px rgba(0,0,0,.08); padding: 20px; overflow-y: auto;
+}
+#trace-close { position: absolute; top: 12px; right: 12px; background: none; color: var(--muted); border: none; font-size: 22px; }
+.trace-summary { display: grid; gap: 4px; margin-bottom: 8px; }
+.trace-row { display: grid; grid-template-columns: 150px 1fr; gap: 8px; font-size: 14px; overflow-wrap: anywhere; }
+.trace-key { color: var(--muted); }
+.trace-step { border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; margin: 6px 0; }
+.trace-step.failed { border-color: var(--err); }
+.trace-step summary { cursor: pointer; font-size: 14px; }
+.trace-bar { height: 5px; background: var(--bg); border-radius: 3px; margin-top: 4px; }
+.trace-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+.trace-attrs { display: grid; grid-template-columns: 130px 1fr; gap: 2px 8px; font-size: 12px; margin: 8px 0 2px; }
+.trace-attrs dt { color: var(--muted); }
+.trace-attrs dd { margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, monospace; }
+#details-button { margin-left: 8px; }
