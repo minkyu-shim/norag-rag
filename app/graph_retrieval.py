@@ -59,18 +59,22 @@ def is_available(corpus):
 #   - names of ONE plain word must match with their case: the plan "Team" must not match "which team",
 #     the plan "Free" must not match "free a seat". (Services are written in lowercase, like the docs.)
 # Known limit: a question that names nothing of the graph ("I lost my phone") gets no seed at all.
+def alias_pattern(alias):
+    # The regex that finds one name of a node in a text (also used by the concept map, app/explorer.py).
+    # None for a name too short to be searched safely.
+    name = alias.strip("*`# ")
+    if len(name) < 3:
+        return None
+    one_plain_word = re.fullmatch(r"[A-Za-zÀ-ÿ]+", name) is not None
+    return re.compile(rf"(?<![\w-]){re.escape(name)}(?![\w-])", flags=0 if one_plain_word else re.IGNORECASE)
+
+
 def find_entities(question, g):
     seeds = []
     for node_id, node in g.nodes(data=True):
-        for alias in node["aliases"]:
-            name = alias.strip("*`# ")
-            if len(name) < 3:
-                continue
-            one_plain_word = re.fullmatch(r"[A-Za-zÀ-ÿ]+", name) is not None
-            pattern = rf"(?<![\w-]){re.escape(name)}(?![\w-])"
-            if re.search(pattern, question, flags=0 if one_plain_word else re.IGNORECASE):
-                seeds.append(node_id)
-                break
+        patterns = [p for p in map(alias_pattern, node["aliases"]) if p is not None]
+        if any(p.search(question) for p in patterns):
+            seeds.append(node_id)
     return seeds
 
 
