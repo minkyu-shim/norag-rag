@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Naive RAG — V2</title>
+  <title>Hybrid RAG — V3</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>Naive RAG <span class="tag">V2</span></h1>
+    <h1>Hybrid RAG <span class="tag">V3</span></h1>
     <!-- Every tab works on the corpus chosen here (the API needs it on every call) -->
     <label class="corpus-picker">Corpus
       <select id="corpus"></select>
@@ -16,6 +16,8 @@
     <nav>
       <button class="tab active" data-tab="ask">Ask</button>
       <button class="tab" data-tab="documents">Documents</button>
+      <button class="tab" data-tab="words">Words</button>
+      <button class="tab" data-tab="eval">Evaluation</button>
       <button class="tab" data-tab="settings">Settings</button>
     </nav>
   </header>
@@ -34,6 +36,16 @@
           <legend>Search in</legend>
           <div id="source-list" class="sources"></div>
         </fieldset>
+        <!-- V3: the retrievers that are ON for this question; their results are fused with RRF -->
+        <fieldset>
+          <legend>Retrievers <small>(fused with RRF)</small></legend>
+          <div id="retriever-list" class="sources">
+            <label><input type="checkbox" value="dense" checked> dense (embeddings)</label>
+            <label><input type="checkbox" value="bm25" checked> BM25 (keywords)</label>
+            <label id="graph-option" title="No concept graph built for this corpus and chunk setting">
+              <input type="checkbox" value="graph" disabled> concept graph</label>
+          </div>
+        </fieldset>
         <textarea id="question" rows="3" placeholder="Ask a question about the documents of this corpus…" required></textarea>
         <button type="submit" id="ask-button">Ask</button>
       </form>
@@ -42,9 +54,17 @@
         <div id="status-banner" class="banner"></div>
         <ul id="warnings" class="warnings"></ul>
         <div id="answer" class="answer"></div>
+        <p id="cost" class="meta"></p>
         <div id="citations" class="chips"></div>
 
-        <h3>Retrieved passages <small>(top-k, closest first — distance is not a confidence)</small></h3>
+        <!-- V3: shown when the graph retriever was on -->
+        <div id="graph-path" class="graph-path hidden">
+          <h3>Graph path <small>(entities found in the question → edges followed → chunks)</small></h3>
+          <p id="graph-entities" class="meta"></p>
+          <ol id="graph-edges"></ol>
+        </div>
+
+        <h3>Retrieved passages <small>(top-k after RRF fusion — found by: retriever #rank in its own list)</small></h3>
         <ol id="retrieved" class="retrieved"></ol>
       </div>
     </section>
@@ -60,6 +80,100 @@
         <thead><tr><th>Document</th><th>Size</th><th>Chunks (current settings)</th><th></th></tr></thead>
         <tbody id="documents-table"></tbody>
       </table>
+    </section>
+
+    <!-- WORDS (V2): which words does the corpus contain, and where? --------->
+    <section id="tab-words" class="panel hidden">
+      <p class="hint">Words as the BM25 index sees them: lowercase, identifiers kept whole (kst-2044),
+        stopwords left out, no stemming. Counted in the chunks of the current chunk setting.</p>
+      <div class="row mode-switch">
+        <button type="button" class="mode active" data-mode="corpus">Corpus mode</button>
+        <button type="button" class="mode" data-mode="question">Question mode</button>
+      </div>
+      <div id="words-message" class="banner hidden"></div>
+
+      <!-- Corpus mode: vocabulary, then word -> chunks -->
+      <div id="words-corpus">
+        <form id="vocab-form" class="row">
+          <input type="search" id="vocab-filter" placeholder="Filter words (contains…)">
+          <select id="vocab-order">
+            <option value="frequent">most frequent first</option>
+            <option value="rare">rarest first (fewest chunks)</option>
+            <option value="alpha">alphabetical</option>
+          </select>
+          <button type="submit">Show vocabulary</button>
+        </form>
+        <p id="vocab-stats" class="meta"></p>
+        <div class="vocab-scroll">
+          <table id="vocab-table" class="hidden">
+            <thead><tr><th>Word</th><th class="num">Occurrences</th><th class="num">Chunks containing it</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <form id="word-form" class="row">
+          <input type="search" id="word-input" placeholder="One word, e.g. refund or KST-2044" required>
+          <button type="submit">Find the chunks</button>
+        </form>
+        <div id="word-result" class="hidden">
+          <h3 id="word-title"></h3>
+          <ol id="word-chunks" class="retrieved"></ol>
+        </div>
+      </div>
+
+      <!-- Question mode: question -> words -->
+      <div id="words-question" class="hidden">
+        <form id="qwords-form">
+          <label class="stack">Pick a question of the evaluation set
+            <select id="qwords-pick"><option value="">— or type your own question below —</option></select>
+          </label>
+          <textarea id="qwords-text" rows="2" placeholder="Type a question…"></textarea>
+          <button type="submit">Analyse the words</button>
+        </form>
+        <div id="qwords-result" class="hidden">
+          <p id="qwords-summary" class="meta"></p>
+          <table id="qwords-table">
+            <thead><tr><th>Word</th><th class="num">Occurrences</th><th class="num">Chunks containing it</th>
+              <th>In the answer chunk?</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <div id="qwords-evidence" class="hidden">
+            <h3>Chunk(s) that hold the answer <small>(question words highlighted)</small></h3>
+            <ol id="qwords-evidence-list" class="retrieved"></ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EVALUATION (V2/V3): same code as python eval/run_eval.py ----------------->
+    <section id="tab-eval" class="panel hidden">
+      <form id="eval-form">
+        <fieldset>
+          <legend>Retrievers <small>(fused with RRF)</small></legend>
+          <div id="eval-retrievers" class="sources">
+            <label><input type="checkbox" value="dense" checked> dense</label>
+            <label><input type="checkbox" value="bm25" checked> BM25</label>
+            <label><input type="checkbox" value="graph"> concept graph</label>
+          </div>
+        </fieldset>
+        <label class="check"><input type="checkbox" id="eval-llm">
+          Also generate the answers with the LLM, to grade them by hand (about 5 s and 1 API call per question)</label>
+        <button type="submit" id="eval-button">Run the evaluation</button>
+      </form>
+      <p class="hint">Runs every question of this corpus' question set (eval/questions_&lt;corpus&gt;.jsonl) with the
+        current chunk settings, and saves the results in eval/results/. A chunk is relevant when it covers at
+        least half of an evidence quote; unanswerable questions are left out of hit@k and recall@k.</p>
+      <div id="eval-message" class="banner hidden"></div>
+      <div id="eval-result" class="hidden">
+        <p id="eval-file" class="meta"></p>
+        <div class="table-scroll"><table id="eval-table"><thead></thead><tbody></tbody></table></div>
+        <p id="eval-extra" class="meta"></p>
+        <h3>Per question <small>(rank of the first relevant chunk, in the top 10)</small></h3>
+        <table id="eval-questions">
+          <thead><tr><th>id</th><th>type</th><th>question</th><th>rank</th><th>LLM</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </section>
 
     <!-- SETTINGS ------------------------------------------------------------->
@@ -98,6 +212,16 @@
     <pre id="chunk-text"></pre>
   </aside>
 
+  <!-- V4: the trace of an answer (opened by its "Details" button, see trace.js) -->
+  <aside id="trace-panel" class="hidden">
+    <button id="trace-close" aria-label="Close">×</button>
+    <h3 id="trace-title"></h3>
+    <div id="trace-summary" class="trace-summary"></div>
+    <h4>Steps <small>(click a step for its details)</small></h4>
+    <div id="trace-steps"></div>
+  </aside>
+
+  <script src="trace.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
