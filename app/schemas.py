@@ -114,6 +114,7 @@ class AskResponse(BaseModel):
     retrievers: list[str] = []      # V3: the retrievers that were on
     graph_path: GraphPath | None = None     # V3: only when the graph retriever was on
     cost: Cost = Cost()
+    trace_id: str | None = None     # V4: the trace of this request: GET /api/traces/{trace_id} (the "Details" button)
 
 
 # --- Evaluation (V2, started from the UI) ---------------------------------------
