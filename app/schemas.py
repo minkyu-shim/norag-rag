@@ -10,6 +10,11 @@ from app.config import CORPORA
 # Literal["crime", "kestrel"]: an unknown corpus is a 422 from FastAPI, before our code runs.
 CorpusName = Literal[tuple(CORPORA)]
 
+# V3: the retrievers that can be switched on/off. Their results are fused with RRF (see rag.py).
+#   dense: embeddings + Chroma (V1/V2)   bm25: keywords, SQLite FTS5   graph: concept graph (Kestrel)
+RetrieverName = Literal["dense", "bm25", "graph"]
+DEFAULT_RETRIEVERS = ["dense", "bm25"]
+
 
 # --- Settings the user can change from the UI ---------------------------------
 class Settings(BaseModel):
@@ -42,6 +47,8 @@ class AskRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     # Names of the documents to search in, inside that corpus (metadata filter on "source").
     sources: list[str] = Field(min_length=1)
+    # V3: which retrievers run for this question (at least one). Checkboxes in the Ask tab.
+    retrievers: list[RetrieverName] = Field(default=DEFAULT_RETRIEVERS, min_length=1)
 
 
 class ChunkRef(BaseModel):
@@ -52,7 +59,14 @@ class ChunkRef(BaseModel):
     end: int
     start_line: int
     end_line: int
-    distance: float     # vector distance: lower = closer. NOT a confidence.
+    # Vector distance: lower = closer. NOT a confidence. None when the dense retriever did not find the chunk.
+    distance: float | None = None
+    # V3: BM25 score (higher = better match, also NOT a confidence). None when BM25 did not find the chunk.
+    bm25_score: float | None = None
+    # V3: which retriever(s) found this chunk, and at which rank in their OWN list, e.g. {"dense": 10, "bm25": 1}.
+    found_by: dict[str, int] = {}
+    # V3: the fused score, sum of 1 / (RRF_K + rank) over the retrievers that found the chunk.
+    rrf_score: float | None = None
     text: str
 
 
@@ -65,6 +79,31 @@ AskStatus = Literal[
 ]
 
 
+# V3: what the graph retriever did, shown in the UI when the graph is on.
+class GraphEdge(BaseModel):
+    source: str
+    relation: str
+    target: str
+    hop: int                # 1 = the edge touches an entity of the question
+    quote: str              # the provenance: the passage that states the fact
+    document: str
+    chunk_ids: list[str]    # the chunks (current setting) that contain the quote
+
+
+class GraphPath(BaseModel):
+    entities: list[str]     # the graph entities found in the question (the starting points of the walk)
+    edges: list[GraphEdge]  # the edges followed, hop by hop
+
+
+# V3: what one question cost. Measured for every answer, summed per configuration by the evaluation.
+class Cost(BaseModel):
+    retrieval_ms: float = 0
+    llm_calls: int = 0              # retries on invalid output count as extra calls
+    prompt_tokens: int = 0          # as reported by the provider (response.usage)
+    completion_tokens: int = 0
+    llm_ms: float = 0
+
+
 class AskResponse(BaseModel):
     status: AskStatus
     message: str        # human-readable explanation of the status, shown in the UI
@@ -72,6 +111,26 @@ class AskResponse(BaseModel):
     citations: list[ChunkRef] = []
     retrieved: list[ChunkRef] = []
     warnings: list[str] = []
+    retrievers: list[str] = []      # V3: the retrievers that were on
+    graph_path: GraphPath | None = None     # V3: only when the graph retriever was on
+    cost: Cost = Cost()
+    trace_id: str | None = None     # V4: the trace of this request: GET /api/traces/{trace_id} (the "Details" button)
+
+
+# --- Evaluation (V2, started from the UI) ---------------------------------------
+class EvalRequest(BaseModel):
+    corpus: CorpusName
+    retrievers: list[RetrieverName] = Field(default=DEFAULT_RETRIEVERS, min_length=1)
+    # Off by default: retrieval only is free and takes seconds; with the LLM it is ~5 s per question.
+    with_llm: bool = False
+
+
+# --- Words analytics (V2) --------------------------------------------------------
+class WordsQuestionRequest(BaseModel):
+    corpus: CorpusName
+    # Either a free question, or the id of a question of the set (then its evidence chunks are shown too).
+    question: str = Field(default="", max_length=2000)
+    question_id: str | None = None
 
 
 # --- Documents ---------------------------------------------------------------

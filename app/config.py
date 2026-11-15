@@ -14,7 +14,9 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
 CORPORA_DIR = DATA_DIR / "corpora"    # one sub-folder per corpus, one .md/.txt file per document
 CHROMA_DIR = DATA_DIR / "chroma"      # the vector DB (separate from ./chroma_db used by the scripts)
+BM25_FILE = DATA_DIR / "bm25.sqlite"  # V3: the keyword index (SQLite FTS5), next to the vector DB
 SETTINGS_FILE = DATA_DIR / "settings.json"
+TRACES_FILE = DATA_DIR / "traces.sqlite"   # V4: one trace per request, one span per step (app/tracing.py)
 WEB_DIR = ROOT_DIR / "web"
 
 # --- Corpora -----------------------------------------------------------------
@@ -56,3 +58,20 @@ MODEL = "gemini-3.1-flash-lite"
 LLM_TIMEOUT_SECONDS = 30
 # How many extra attempts when the LLM answer does not match the schema.
 LLM_INVALID_OUTPUT_RETRIES = 1
+
+# --- V4: observability (Part A) ----------------------------------------------
+# Traces stay in data/traces.sqlite, on this machine, and are deleted after this many days (at startup).
+TRACE_RETENTION_DAYS = 30
+# Every string stored in a trace is cut here: a trace holds chunk ids, never whole documents.
+MAX_TRACE_STRING = 600
+# Price of the LLM, in USD per million tokens. Left at 0 on purpose: copy the current numbers of
+# your model from the provider's price page. At 0 the trace shows tokens only, cost "n/a".
+LLM_PRICE_INPUT_PER_MTOK = float(os.getenv("LLM_PRICE_INPUT_PER_MTOK", "0"))
+LLM_PRICE_OUTPUT_PER_MTOK = float(os.getenv("LLM_PRICE_OUTPUT_PER_MTOK", "0"))
+
+# --- V4: personal data redaction (Part C) --------------------------------------
+# Replace e-mails, phone numbers and names before a prompt is sent to the LLM provider and before
+# anything is written to a trace. Set REDACT_PERSONAL_DATA=0 to switch it off (for comparison only).
+REDACTION_ENABLED = os.getenv("REDACT_PERSONAL_DATA", "1") != "0"
+# Optional: names to always redact, one per line (e.g. the people of your own documents).
+REDACTION_NAMES_FILE = DATA_DIR / "redaction_names.txt"
