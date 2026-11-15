@@ -29,6 +29,7 @@ async def lifespan(app):
     # First start: copy the seed files of every corpus into data/corpora/ and index what is
     # not indexed yet, so the app is usable right away (takes ~20s for Crime and Punishment).
     documents.seed_all()
+    graph.seed_graphs()          # V4: the concept map works right after a clone, no build needed
     for corpus in CORPORA:
         documents.index_missing(corpus, load_settings())
     yield

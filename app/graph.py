@@ -1,4 +1,5 @@
 import hashlib
+import shutil
 import json
 import re
 import time
@@ -9,7 +10,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from app import documents
 from app.chunking import chunk_text
-from app.config import DATA_DIR, MODEL, LLM_INVALID_OUTPUT_RETRIES
+from app.config import DATA_DIR, MODEL, LLM_INVALID_OUTPUT_RETRIES, GRAPH_SEEDS
 from app.llm import call_llm, ProviderError
 from app.schemas import Cost
 
@@ -182,6 +183,17 @@ def graph_file(corpus):
     # character span in the file, and the retriever maps the span onto the chunks of the CURRENT setting.
     # (The chunk setting of the build is only the unit the LLM read; it is recorded in the file.)
     return GRAPH_DIR / f"{corpus}.json"
+
+
+def seed_graphs():
+    # First start (V4): copy the committed graph of each corpus that has one, like the seed documents
+    # (documents.seed_corpus). A graph already in data/graph/ (e.g. rebuilt) is never overwritten.
+    for corpus, seed in GRAPH_SEEDS.items():
+        target = graph_file(corpus)
+        if not target.exists() and seed.exists():
+            GRAPH_DIR.mkdir(parents=True, exist_ok=True)
+            shutil.copy(seed, target)
+            print(f"Seeded the concept graph of {corpus!r} from {seed.relative_to(seed.parents[2])}")
 
 
 def cache_file(chunk):
