@@ -8,7 +8,7 @@ from collections import Counter
 from datetime import datetime
 from typing import Literal
 from pydantic import BaseModel, Field, ValidationError, model_validator
-from app import documents
+from app import documents, tracing
 from app.chunking import chunk_text
 from app.config import DATA_DIR, MODEL, LLM_INVALID_OUTPUT_RETRIES, GRAPH_SEEDS
 from app.llm import call_llm, ProviderError
@@ -253,7 +253,8 @@ def build(corpus, settings, log=print):
             stats["cached_chunks"] += 1
         else:
             try:
-                raw_triples = extract_raw(chunk, cost)
+                with tracing.span("graph.extract", chunk_id=chunk_id):     # V4: its LLM calls are child spans
+                    raw_triples = extract_raw(chunk, cost)
             except ProviderError as e:
                 raw_triples = None
                 log(f"  {chunk_id}: provider error, skipped ({e})")

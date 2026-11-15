@@ -3,8 +3,10 @@ import openai
 from pydantic import ValidationError
 from app.config import (
     GOOGLE_API_KEY, LLM_BASE_URL, MODEL, LLM_TIMEOUT_SECONDS, LLM_INVALID_OUTPUT_RETRIES,
+    LLM_PRICE_INPUT_PER_MTOK, LLM_PRICE_OUTPUT_PER_MTOK,
 )
 from app.schemas import LLMAnswer, Cost
+from app import tracing, redaction
 
 # Talking to the LLM: Gemini through Google's OpenAI-compatible endpoint (same as the scripts).
 #
@@ -44,52 +46,77 @@ else:
 def call_llm(prompt, cost=None):
     # V3: `cost` (a schemas.Cost) is filled in place: one more call, its tokens and its time.
     # It is updated even when the call fails, so a failing provider still shows up in the cost.
+    # V4: every call is one span of the current trace (tokens, ms, status), and the prompt is
+    # redacted (e-mails, phones, names) BEFORE it leaves the machine.
     if client is None:
         raise ProviderError("The LLM is not configured: set GOOGLE_API_KEY in .env and restart.", 500)
     if cost is None:
         cost = Cost()
 
-    cost.llm_calls += 1
-    started = time.perf_counter()
-    try:
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            # JSON mode: asks the model for a JSON object. It does NOT guarantee our schema,
-            # that is why we still validate the result with Pydantic below.
-            response_format={"type": "json_object"},
-        )
-    # The order matters: APITimeoutError is a subclass of APIConnectionError.
-    except openai.RateLimitError:
-        raise ProviderError("The LLM provider is rate limiting us (429). Wait a few seconds and retry.", 429)
-    except openai.APITimeoutError:
-        raise ProviderError(f"The LLM provider did not answer within {LLM_TIMEOUT_SECONDS}s. Retry.", 504)
-    except openai.APIConnectionError:
-        raise ProviderError("Could not reach the LLM provider (network problem).", 502)
-    except openai.AuthenticationError:
-        raise ProviderError("The LLM provider rejected the API key. Check GOOGLE_API_KEY in .env.", 500)
-    except openai.NotFoundError:
-        # Models get retired: a 404 here usually means MODEL in app/config.py no longer exists.
-        raise ProviderError(f"The LLM provider does not know the model {MODEL!r} (404). Change MODEL in app/config.py.", 500)
-    except openai.APIStatusError as e:
-        raise ProviderError(f"The LLM provider returned an error (HTTP {e.status_code}).", 502)
-    finally:
-        cost.llm_ms += round((time.perf_counter() - started) * 1000, 1)
+    with tracing.span("llm.call", model=MODEL, prompt_chars=len(prompt)) as sp:
+        redacted = redaction.redact(prompt)
+        sp.set(redacted_items=redacted.counts)      # how many were replaced; never the values themselves
 
-    if response.usage:      # some providers leave it out: then the tokens stay unknown (0)
-        cost.prompt_tokens += response.usage.prompt_tokens or 0
-        cost.completion_tokens += response.usage.completion_tokens or 0
-    return response.choices[0].message.content or ""
+        cost.llm_calls += 1
+        started = time.perf_counter()
+        try:
+            response = client.chat.completions.create(
+                model=MODEL,
+                messages=[{"role": "user", "content": redacted.text}],
+                # JSON mode: asks the model for a JSON object. It does NOT guarantee our schema,
+                # that is why we still validate the result with Pydantic below.
+                response_format={"type": "json_object"},
+            )
+        # The order matters: APITimeoutError is a subclass of APIConnectionError.
+        except openai.RateLimitError:
+            raise ProviderError("The LLM provider is rate limiting us (429). Wait a few seconds and retry.", 429)
+        except openai.APITimeoutError:
+            raise ProviderError(f"The LLM provider did not answer within {LLM_TIMEOUT_SECONDS}s. Retry.", 504)
+        except openai.APIConnectionError:
+            raise ProviderError("Could not reach the LLM provider (network problem).", 502)
+        except openai.AuthenticationError:
+            raise ProviderError("The LLM provider rejected the API key. Check GOOGLE_API_KEY in .env.", 500)
+        except openai.NotFoundError:
+            # Models get retired: a 404 here usually means MODEL in app/config.py no longer exists.
+            raise ProviderError(f"The LLM provider does not know the model {MODEL!r} (404). Change MODEL in app/config.py.", 500)
+        except openai.APIStatusError as e:
+            raise ProviderError(f"The LLM provider returned an error (HTTP {e.status_code}).", 502)
+        finally:
+            cost.llm_ms += round((time.perf_counter() - started) * 1000, 1)
+
+        prompt_tokens = completion_tokens = 0
+        if response.usage:      # some providers leave it out: then the tokens stay unknown (0)
+            prompt_tokens = response.usage.prompt_tokens or 0
+            completion_tokens = response.usage.completion_tokens or 0
+        cost.prompt_tokens += prompt_tokens
+        cost.completion_tokens += completion_tokens
+        sp.set(prompt_tokens=prompt_tokens, completion_tokens=completion_tokens,
+               cost_usd=price(prompt_tokens, completion_tokens), response_chars=len(response.choices[0].message.content or ""))
+
+        # The provider only saw placeholders: put the user's own data back in what comes back.
+        return redaction.restore(response.choices[0].message.content or "", redacted.mapping, json_safe=True)
+
+
+def price(prompt_tokens, completion_tokens):
+    """USD for one call, or None while the prices are not set in app/config.py (then the UI says n/a)."""
+    if not (LLM_PRICE_INPUT_PER_MTOK or LLM_PRICE_OUTPUT_PER_MTOK):
+        return None
+    return round((prompt_tokens * LLM_PRICE_INPUT_PER_MTOK + completion_tokens * LLM_PRICE_OUTPUT_PER_MTOK) / 1_000_000, 6)
 
 
 def ask_llm_for_answer(prompt, cost=None):
     # 1 normal attempt + LLM_INVALID_OUTPUT_RETRIES extra attempts if the output is invalid.
     for attempt in range(1 + LLM_INVALID_OUTPUT_RETRIES):
         raw = call_llm(prompt, cost)
-        try:
-            return LLMAnswer.model_validate_json(raw)
-        except ValidationError as e:
-            # The raw text stays in the server log (useful to debug), it is never shown as an answer.
-            print(f"Invalid LLM output (attempt {attempt + 1}): {e.error_count()} error(s). Raw: {raw[:500]!r}")
+        # V4: the validation is a span too, so a trace shows WHY a second LLM call happened.
+        with tracing.span("llm.validate", attempt=attempt + 1) as sp:
+            try:
+                answer = LLMAnswer.model_validate_json(raw)
+                sp.set(valid=True, found=answer.found, citations=answer.citations)
+                return answer
+            except ValidationError as e:
+                # The raw text stays in the server log (useful to debug), it is never shown as an answer.
+                sp.set(valid=False, errors=e.error_count())
+                print(f"Invalid LLM output (attempt {attempt + 1}): {e.error_count()} error(s). Raw: {raw[:500]!r}")
 
     raise InvalidOutputError()

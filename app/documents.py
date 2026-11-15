@@ -1,8 +1,8 @@
 import shutil
 from pathlib import Path
-from app.config import CORPORA_DIR, CORPORA, ALLOWED_EXTENSIONS
+from app.config import CORPORA_DIR, CORPORA, ALLOWED_EXTENSIONS, EMBEDDING_MODEL
 from app.chunking import chunk_text
-from app import store, bm25
+from app import store, bm25, tracing
 
 # Document management: each corpus is simply a folder data/corpora/<corpus>/, one file per document.
 # The file name is the document id inside its corpus (it is stored as "source" in the chunk metadata,
@@ -86,43 +86,61 @@ def delete_document(corpus, name):
 
 
 # --- Indexing phase: document -> chunks -> embeddings -> vector DB (+ BM25) ---
+# V4: every indexing run is ONE trace (an upload, a re-index of a corpus, the startup indexing...).
+# When several documents are indexed in one run, each document is a span of that run's trace;
+# the trace holds sizes, counts and timings, never the text of a document.
 def index_document(corpus, name, settings):
-    collection = store.get_collection(corpus, settings)
+    with tracing.trace("index.document", corpus=corpus, document=name, chunk_size=settings.chunk_size,
+                       overlap_percent=settings.overlap_percent) as t:
+        collection = store.get_collection(corpus, settings)
 
-    # Re-indexing a document: first remove its old chunks, so we never keep duplicates.
-    collection.delete(where={"source": name})
+        # Re-indexing a document: first remove its old chunks, so we never keep duplicates.
+        with tracing.span("index.clear_old"):
+            collection.delete(where={"source": name})
 
-    chunks = chunk_text(read_document(corpus, name), settings.chunk_size, settings.overlap_percent)
-    # The chunk ids, shared by the vector DB and the BM25 index (RRF matches chunks by id).
-    ids = [f"{name}::{i}" for i in range(len(chunks))]
+        with tracing.span("index.chunk") as sp:
+            text = read_document(corpus, name)
+            chunks = chunk_text(text, settings.chunk_size, settings.overlap_percent)
+            sp.set(characters=len(text), chunks=len(chunks))
+        # The chunk ids, shared by the vector DB and the BM25 index (RRF matches chunks by id).
+        ids = [f"{name}::{i}" for i in range(len(chunks))]
 
-    # Chroma computes the embeddings itself (with store.embedding_function) when we add documents.
-    for batch_start in range(0, len(chunks), ADD_BATCH_SIZE):
-        batch = chunks[batch_start:batch_start + ADD_BATCH_SIZE]
-        collection.add(
-            ids=ids[batch_start:batch_start + ADD_BATCH_SIZE],
-            documents=[c["text"] for c in batch],
-            # The metadata is what makes a reference verifiable: which file, which characters, which lines.
-            metadatas=[
-                {
-                    "source": name,
-                    "chunk_index": batch_start + i,
-                    "start": c["start"],
-                    "end": c["end"],
-                    "start_line": c["start_line"],
-                    "end_line": c["end_line"],
-                }
-                for i, c in enumerate(batch)
-            ],
-        )
-    # V3: the same chunks, with the same ids, go into the keyword index (tokens only, no embedding).
-    bm25.index_chunks(corpus, settings, name, ids, chunks)
-    print(f"Indexed {corpus}/{name}: {len(chunks)} chunks into {collection.name} (vectors + BM25)")
-    return len(chunks)
+        # Chroma computes the embeddings itself (with store.embedding_function) when we add documents.
+        with tracing.span("index.embed_and_store", model=EMBEDDING_MODEL, collection=collection.name) as sp:
+            for batch_start in range(0, len(chunks), ADD_BATCH_SIZE):
+                batch = chunks[batch_start:batch_start + ADD_BATCH_SIZE]
+                collection.add(
+                    ids=ids[batch_start:batch_start + ADD_BATCH_SIZE],
+                    documents=[c["text"] for c in batch],
+                    # The metadata is what makes a reference verifiable: which file, which characters, which lines.
+                    metadatas=[
+                        {
+                            "source": name,
+                            "chunk_index": batch_start + i,
+                            "start": c["start"],
+                            "end": c["end"],
+                            "start_line": c["start_line"],
+                            "end_line": c["end_line"],
+                        }
+                        for i, c in enumerate(batch)
+                    ],
+                )
+            sp.set(chunks=len(chunks))
+        # V3: the same chunks, with the same ids, go into the keyword index (tokens only, no embedding).
+        with tracing.span("index.bm25") as sp:
+            bm25.index_chunks(corpus, settings, name, ids, chunks)
+            sp.set(chunks=len(chunks))
+        t.set(chunks=len(chunks))
+        print(f"Indexed {corpus}/{name}: {len(chunks)} chunks into {collection.name} (vectors + BM25)")
+        return len(chunks)
 
 
 def index_all(corpus, settings):
-    return {path.name: index_document(corpus, path.name, settings) for path in list_document_paths(corpus)}
+    with tracing.trace("index.corpus", corpus=corpus, reason="reindex", chunk_size=settings.chunk_size,
+                       overlap_percent=settings.overlap_percent) as t:
+        result = {path.name: index_document(corpus, path.name, settings) for path in list_document_paths(corpus)}
+        t.set(documents=len(result), chunks=sum(result.values()))
+        return result
 
 
 def index_missing(corpus, settings, names=None):
@@ -130,8 +148,12 @@ def index_missing(corpus, settings, names=None):
     # Shared by the app startup and eval/run_eval.py, so both follow the same rule.
     if names is None:
         names = [path.name for path in list_document_paths(corpus)]
-    for name in names:
-        if not is_indexed(corpus, name, settings):
+    missing = [name for name in names if not is_indexed(corpus, name, settings)]
+    if not missing:
+        return      # nothing to do: no trace for a run that did nothing
+    with tracing.trace("index.corpus", corpus=corpus, reason="missing", documents=len(missing),
+                       chunk_size=settings.chunk_size, overlap_percent=settings.overlap_percent):
+        for name in missing:
             index_document(corpus, name, settings)
 
 
