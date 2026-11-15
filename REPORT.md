@@ -241,3 +241,76 @@ The graph costs nothing per question: its cost is at indexing time (44 LLM calls
 | 11 | q05 with BM25 alone | Evidence not in the top 20 | No common word: `phone` and `anymore` are not in the corpus |
 | 12 | Crime question set | 17 / 20 answerable questions answered right with no retrieval | The model knows the novel; only the needle questions test the RAG |
 | 13 | Triple `KST-2044 escalate_to Data Integrations` | Wrong triple accepted | The quote check only proves the quote is in the chunk, not that it belongs to the source entity (two sections in one chunk) |
+
+---
+
+## 8. V4 Part B — Concept map explorer
+
+### 8.1 What the user gets
+- A **Concept map** tab (Kestrel). On the left, the 32 concepts of the graph, grouped by type (team, service, error code, person, channel), with a search box.
+- Click a concept to see its neighbourhood drawn as a small map: the concept in the middle, its neighbours around it, arrows in the direction of each relation, relations in plain words ("owned by", "on-call channel"). Click a neighbour to move to it; **Back** returns.
+- Under the map, every link as a sentence (*KST-5031 escalate to → postroom*), the quote the build read it from, and the passage(s) it comes from. A click opens the passage with the names highlighted.
+- **Documents that mention it**: per document, how many times and in which passages.
+- **Ask about this**: opens the Ask tab with a question that fits the type of concept ("What does the Platform team own, and how can support reach it?"), and switches the graph retriever on. The user can edit it before asking.
+
+### 8.2 Decisions (facts; the "why" is TODO (team))
+- **Read-only, no LLM call.** The graph is already built (V3). Code: `app/explorer.py`, `web/explorer.js`; API `GET /api/concepts`, `GET /api/concept`.
+- **One concept's neighbourhood (1 hop)**, not the whole graph at once.
+- **Links point to the chunks of the current chunk setting.** Each edge stores its quote's character span, mapped onto the chunks with `coverage()`, same rule as the graph retriever and the evaluation.
+- **Mentions** use the same name matching as the graph retriever (`graph_retrieval.alias_pattern`, shared since V4).
+- **Duplicate edges are shown as one link with several sources** (see 8.4).
+- **Why:** TODO (team).
+
+### 8.3 Cost, failures, checks
+- **Cost per click:** 0 LLM calls, 0 tokens. Server time for one concept, measured over the 32 concepts × 3: p50 0.6 ms, p95 0.8 ms, max 1.3 ms; about 2–6 ms in the browser. The cost of the feature is the graph build, once: 44 LLM calls, ~34 k prompt tokens, 403 s (section 6.2). Every response carries its timing per step (`graph.load`, `graph.neighbours`, `chunks.map`, `documents.mentions`), ids and counts only, never chunk text.
+- **Failures, and what the user sees:**
+
+| Case | What the user sees |
+|---|---|
+| No graph for the corpus (Crime and Punishment) | "There is no concept map for 'crime' yet", and the command that builds it |
+| A concept with no link | The concept alone, and "no link in the concept map" |
+| A document deleted after the build | The link stays, with "… was deleted after the concept map was built" |
+| Unknown concept id | HTTP 404 with a message |
+| A name no document contains | "No document contains the name … as such" (see Analytics Eng below) |
+
+- **Checked on 7 concepts:**
+
+| Concept | Links | What we checked / found |
+|---|---|---|
+| postroom | 4 | KST-5031 (raised by, escalate to), owned by Messaging, replaced mailman: the q08 chain is visible in one view |
+| Messaging | 3 | Re-centring from postroom, lead Inès Moreau, #oncall-messaging; Back returns to postroom |
+| Platform | 4 | The node the plan called a hub: only 4 links at this size, below `HUB_DEGREE` = 12 |
+| Payments Core | 3 | Was 5 before the fix: two links were stored twice (8.4) |
+| KST-2044 | 1 | Shows the **wrong** triple *KST-2044 escalate to Data Integrations* with its quote, which is the KST-2040 line: the map makes the error easy to see |
+| KST-5031 | 2 | Two relations to the same neighbour: one node, label "escalate to · raised by" |
+| Analytics Eng | 1 | A ghost concept (8.4): no document mentions it |
+
+### 8.4 What the explorer showed about the graph
+- **Duplicate edges.** The same triple was extracted from two overlapping chunks (`service-catalog.md::3` and `::4`): *Payments Core lead Jonas Berg* and *Payments Core on_call_channel #oncall-payments* are each stored twice. The graph counts 28 edges, but there are fewer distinct links.
+- **A missed merge.** `Analytics Eng` (Team) is a separate node from `Analytics Engine`. The LLM copied a name cut at a chunk boundary (the KST-3012 "Escalate" line). No document contains "Analytics Eng" on its own, and the normalization rule (same type + same normalized name) cannot merge it.
+- **The wrong KST-2044 triple** (section 6.2) is visible as soon as one clicks KST-2044.
+
+## 9. V4 — Clean-up for a first-time user, and the install path
+
+### 9.1 Clean-up
+- **Hidden by default, shown with "Show technical details":** the retriever switches, the scores and RRF ranks of each passage, the graph path, the cost line, the technical part of a passage's details, and the Words, Evaluation and Settings tabs. The choice is remembered in the browser.
+- **A first-time user sees** three tabs: Ask, Concept map, Documents.
+- **Plain words:**
+  - Header: "Ask the documents" instead of "Hybrid RAG".
+  - Document sets: "Kestrel Analytics (help centre)", "Crime and Punishment (novel)" instead of `kestrel` / `crime`.
+  - Status titles: "Answer found in your documents", "Not in your documents", "The AI service did not answer" instead of `answered` / `not_found` / `provider_error`. The server's message follows.
+  - Index warning: "These documents are not ready for questions yet … Prepare them now".
+  - Buttons and headings: "Add the document", "Passages the answer is based on".
+- **Loading states:** "Searching the documents…" while a question runs; "Loading…" in the concept map.
+- **Small screens:** the tab bar wraps instead of widening the page.
+- **Why:** TODO (team).
+
+### 9.2 Install path
+- **Problem found:** `data/` is not in git, so a fresh clone had no concept graph (and building one costs ~45 LLM calls).
+- **Fix:** the graph is committed as a seed file (`docs/graphs/kestrel.json`, 16 KB). It is copied to `data/graph/` on first start, like the seed documents (`graph.seed_graphs()`), and never overwrites a rebuilt graph.
+- **README:** rewritten so the first section is a quick start (clone → venv → install → `.env` → `uvicorn` → open the page), with what the first start does and a troubleshooting list. The NoRAG / RAG scripts of the start of the course moved to the end.
+- **Tested:** fresh clone of the branch into an empty folder, new venv, `pip install -r requirements.txt`, no `.env`, `uvicorn app.main:app`.
+  - Both corpora were seeded and indexed with no manual step, and the concept map had 32 concepts.
+  - Ask without a key returned "The LLM is not configured: set GOOGLE_API_KEY in .env and restart", together with the 5 retrieved passages.
+  - Not covered: the embedding model was already in the machine's Hugging Face cache, so the first download was not timed; only Python 3.14 was tried.
+- **Why:** TODO (team).
