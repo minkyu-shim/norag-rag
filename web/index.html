@@ -15,6 +15,7 @@
     </label>
     <nav>
       <button class="tab active" data-tab="ask">Ask</button>
+      <button class="tab" data-tab="map">Concept map</button>
       <button class="tab" data-tab="documents">Documents</button>
       <button class="tab" data-tab="words">Words</button>
       <button class="tab" data-tab="eval">Evaluation</button>
@@ -66,6 +67,41 @@
 
         <h3>Retrieved passages <small>(top-k after RRF fusion — found by: retriever #rank in its own list)</small></h3>
         <ol id="retrieved" class="retrieved"></ol>
+      </div>
+    </section>
+
+    <!-- CONCEPT MAP (V4 Part B): explore the concept graph. Logic in explorer.js ----->
+    <section id="tab-map" class="panel hidden">
+      <p class="hint">The concepts found in the documents (teams, services, error codes, people, channels)
+        and how they are linked. Click a concept to see its links and the passage each link was read from.</p>
+      <div id="map-message" class="banner hidden"></div>
+      <div id="map-body" class="map-layout">
+        <div class="map-side">
+          <input type="search" id="map-search" placeholder="Find a concept…" aria-label="Find a concept">
+          <p id="map-count" class="meta"></p>
+          <div id="map-list" class="map-list"></div>
+        </div>
+        <div class="map-main">
+          <p id="map-empty" class="map-empty">Pick a concept in the list, for example <button type="button"
+            class="link" id="map-example">postroom</button>.</p>
+          <div id="map-concept" class="hidden">
+            <div class="map-head">
+              <button type="button" id="map-back" class="link hidden">← Back</button>
+              <h2 id="map-title"></h2>
+              <span id="map-type" class="type-pill"></span>
+            </div>
+            <svg id="map-svg" viewBox="-340 -160 680 320" role="group" aria-label="The concept and its neighbours"></svg>
+            <p id="map-cost" class="meta"></p>
+            <div class="row">
+              <button type="button" id="map-ask">Ask about this</button>
+              <button type="button" id="map-docs" class="secondary">Open the documents</button>
+            </div>
+            <h3>Links <small>(click a passage to read where the link comes from)</small></h3>
+            <ul id="map-links" class="map-links"></ul>
+            <h3 id="map-mentions-title">Documents that mention it</h3>
+            <div id="map-mentions"></div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -213,5 +249,6 @@
   </aside>
 
   <script src="app.js"></script>
+  <script src="explorer.js"></script>
 </body>
 </html>
