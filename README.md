@@ -152,6 +152,22 @@ Open the app, then the **Words** tab. Words are counted as the BM25 index sees t
 - **Corpus mode:** *Show vocabulary* lists every word with its number of occurrences and of chunks (most frequent, rarest, or alphabetical; with a filter). Click a word, or type one, to see the chunks that contain it, with the word highlighted.
 - **Question mode:** type a question or pick one from the question set. For each of its words: how many chunks contain it, and, for a question of the set, whether it appears in the chunk that holds the answer. Words absent from the corpus and stopwords are listed apart.
 
+### 5) Traces and personal data (V4)
+
+**Traces.** Every question and every indexing run (upload, re-index, graph build) is recorded as one *trace*, with one *span* per step (each retriever, the RRF fusion, the prompt, each LLM call with its tokens and time, the output check, the citation check).
+
+- **In the UI:** under every answer, click **Details**. A side panel shows the outcome, total time, LLM calls, tokens, cost, how many personal items were hidden, and the steps as a timeline (click a step for its details).
+- **Through the API:** `GET /api/traces/{trace_id}` (the `trace_id` is in the answer) and `GET /api/traces?limit=50` (latest first). The graph build prints its trace id at the end.
+- **Where:** `data/traces.sqlite`, on your machine only, deleted after 30 days (`TRACE_RETENTION_DAYS` in `app/config.py`). Nothing is sent to a tracing service.
+- **What is never stored:** API keys, whole documents (a trace holds chunk ids; every text is cut at 600 characters), and personal data (see below).
+- **Cost in dollars:** set `LLM_PRICE_INPUT_PER_MTOK` and `LLM_PRICE_OUTPUT_PER_MTOK` (USD per million tokens, from your provider's price page) in `.env`. Until then, the panel shows tokens and "n/a".
+
+**Personal data redaction.** E-mail addresses of people, phone numbers and names (when a cue says it is a person: "my name is …", "Dr …", "Dear …", or listed in `data/redaction_names.txt`, one per line) are replaced by `[EMAIL_1]`, `[PHONE_1]`, `[PERSON_1]` before a prompt is sent to the LLM provider and before anything is written to a trace. The answer comes back with your own data put back, so you read the original on your machine. Role addresses (`privacy@…`), IP addresses, dates and error codes are left alone. Switch it off for a comparison with `REDACT_PERSONAL_DATA=0` in `.env`.
+
+```bash
+python -m pytest tests -q        # tracing, redaction and an end-to-end ask with a fake LLM (no API key, no network)
+```
+
 ## Course scripts (V0): NoRAG vs RAG
 
 The two scripts the project started from, kept for comparison. They are independent from the web app.
