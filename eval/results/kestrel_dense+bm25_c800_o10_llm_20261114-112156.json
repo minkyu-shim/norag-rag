@@ -442,9 +442,9 @@
         ],
         "cited_evidence": true,
         "expected_answer": "The data source refused the connection because the Kestrel IP addresses are not on its allowlist. Add both 203.0.113.10 and 203.0.113.11; adding only one causes intermittent errors.",
-        "grade": null,
+        "grade": "correct",
         "failure": null,
-        "grading_note": null
+        "grading_note": "Allowlist cause and both IP addresses. Leaves out that adding only one address gives intermittent errors: a detail, not a key fact."
       },
       "cost": {
         "retrieval_ms": 12.2,
@@ -637,9 +637,9 @@
         ],
         "cited_evidence": true,
         "expected_answer": "There is no free seat. An Admin must free a seat, or the Owner must add seats or upgrade. The same invitation then works if it is less than 7 days old.",
-        "grade": null,
+        "grade": "correct",
         "failure": null,
-        "grading_note": null
+        "grading_note": "Free a seat / add seats or upgrade, and the 7-day invitation rule."
       },
       "cost": {
         "retrieval_ms": 29.0,
@@ -833,9 +833,9 @@
         ],
         "cited_evidence": false,
         "expected_answer": "E-mail to the Owner and billing contact, retries after 1, 3 and 7 days, then a 21-day grace period (everything works), then read-only, then suspension at 60 days. Nothing is deleted.",
-        "grade": null,
-        "failure": null,
-        "grading_note": null
+        "grade": "wrong",
+        "failure": "retrieval",
+        "grading_note": "Gives the 2025 policy as current: retries at 3 and 7 days, 14-day grace (C4 = billing-policy-2025.md). Current policy: 1/3/7 days, 21-day grace, suspension at 60 days. The 2026 chunk C2 was given but stops before the grace period; the 2026 grace-period chunk ranked 6th, outside the top 5. The model did not notice two versions."
       },
       "cost": {
         "retrieval_ms": 21.8,
@@ -1028,9 +1028,9 @@
         ],
         "cited_evidence": true,
         "expected_answer": "Business and Enterprise. An Admin opens Settings → Security → Single sign-on, downloads the Kestrel SP metadata, registers Kestrel in the identity provider, pastes the IdP metadata URL back, tests with one Admin, then enforces it.",
-        "grade": null,
-        "failure": null,
-        "grading_note": null
+        "grade": "partial",
+        "failure": "generation",
+        "grading_note": "Plans and the 4 setup steps are right. Leaves out 'test with one Admin, then Enforce for all members', which is in C1."
       },
       "cost": {
         "retrieval_ms": 22.7,
@@ -1214,9 +1214,9 @@
         ],
         "cited_evidence": true,
         "expected_answer": "Use a backup code. Without one, ask a workspace Admin to reset your second factor. If you are the only Admin or the Owner, contact support from the account's e-mail address; identity verification can take up to 2 business days.",
-        "grade": null,
+        "grade": "correct",
         "failure": null,
-        "grading_note": null
+        "grading_note": "Backup code, then Admin reset, then support for the only Admin/Owner. Leaves out the 2-business-day verification delay (cut at the end of C3)."
       },
       "cost": {
         "retrieval_ms": 26.3,
@@ -1408,9 +1408,9 @@
         ],
         "cited_evidence": true,
         "expected_answer": "Yes, under the current (March 2026) policy: annual plans are refundable within 60 days of renewal, pro-rated from the request date. The old 2025 policy allowed only 30 days.",
-        "grade": null,
+        "grade": "correct",
         "failure": null,
-        "grading_note": null
+        "grading_note": "60 days, pro-rated, from the 2026 policy. Does not mention the old 30-day rule, the question did not ask for it."
       },
       "cost": {
         "retrieval_ms": 23.6,
@@ -1598,9 +1598,9 @@
         ],
         "cited_evidence": true,
         "expected_answer": "20% compared with twelve months of monthly billing (it was 15% under the 2025 policy).",
-        "grade": null,
+        "grade": "correct",
         "failure": null,
-        "grading_note": null
+        "grading_note": "20%, current policy named."
       },
       "cost": {
         "retrieval_ms": 21.9,
@@ -1793,9 +1793,9 @@
         ],
         "cited_evidence": true,
         "expected_answer": "Messaging, which owns postroom: post in #oncall-messaging as SEV-2. Outside 08:00–20:00 on weekdays, escalate to the Platform on-call.",
-        "grade": null,
-        "failure": null,
-        "grading_note": null
+        "grade": "partial",
+        "failure": "retrieval",
+        "grading_note": "Says 'the team that owns postroom', SEV-2, post in its on-call channel. Never names Messaging or #oncall-messaging: the second hop (service-catalog.md teams table) was not retrieved (evidence rank None)."
       },
       "cost": {
         "retrieval_ms": 22.0,
@@ -1976,9 +1976,9 @@
         "citations": [],
         "cited_evidence": null,
         "expected_answer": "Not in the documents.",
-        "grade": null,
+        "grade": "correct",
         "failure": null,
-        "grading_note": null
+        "grading_note": "Says it is not in the documents."
       },
       "cost": {
         "retrieval_ms": 22.1,
@@ -2159,9 +2159,9 @@
         "citations": [],
         "cited_evidence": null,
         "expected_answer": "Not in the documents (the billing policy says prices are on the pricing page).",
-        "grade": null,
+        "grade": "correct",
         "failure": null,
-        "grading_note": null
+        "grading_note": "Says the price is not in the documents and points to the pricing page."
       },
       "cost": {
         "retrieval_ms": 21.6,
@@ -2351,9 +2351,9 @@
         "citations": [],
         "cited_evidence": false,
         "expected_answer": "Data Integrations, in #oncall-data-integrations. The team is on call 08:00–20:00 (Paris time) on weekdays; outside those hours, escalate to the Platform on-call.",
-        "grade": null,
-        "failure": null,
-        "grading_note": null
+        "grade": "partial",
+        "failure": "retrieval",
+        "grading_note": "Names Data Integrations (first hop), then says the hours are not in the documents. The teams table with 08:00-20:00 weekdays was not retrieved (evidence rank None). Status not_found although half the answer is there."
       },
       "cost": {
         "retrieval_ms": 25.3,
@@ -2546,9 +2546,9 @@
         ],
         "cited_evidence": true,
         "expected_answer": "21 days after the first failed attempt (grace period of the current, March 2026 policy; retries happen 1, 3 and 7 days after the first attempt). Then the workspace becomes read-only. The 2025 policy said 14 days.",
-        "grade": null,
+        "grade": "correct",
         "failure": null,
-        "grading_note": null
+        "grading_note": "21-day grace period of the 2026 policy, then read-only."
       },
       "cost": {
         "retrieval_ms": 7.8,
@@ -2558,5 +2558,25 @@
         "llm_ms": 807.4
       }
     }
-  ]
+  ],
+  "grading": {
+    "grader": "to check by the team",
+    "rules": {
+      "correct": "every key fact of the expected answer is there, and the cited chunks say it. Unanswerable question: the app says it is not in the documents.",
+      "partial": "what it says is true and supported, but a key fact of the expected answer is missing.",
+      "wrong": "it states something false for the current documents (e.g. an outdated policy given as current), or it answers an unanswerable question.",
+      "unsupported": "it says things the cited chunks do not say.",
+      "failure": "for every answer that is not correct: 'retrieval' if a chunk needed for the missing/false part was not in the top 5 given to the LLM, 'generation' if it was given and the LLM did not use it."
+    },
+    "counts": {
+      "correct": 8,
+      "partial": 3,
+      "wrong": 1,
+      "unsupported": 0
+    },
+    "failures": {
+      "retrieval": 3,
+      "generation": 1
+    }
+  }
 }

@@ -32,6 +32,13 @@ CORPORA = {
 }
 DEFAULT_CORPUS = "crime"
 
+# V4: the concept graph is a seed too. data/ is not in git, so a fresh clone would have no concept map
+# (building it takes ~45 LLM calls). On first start, the committed copy is copied to data/graph/<corpus>.json.
+# After a rebuild (python scripts/build_graph.py kestrel), copy data/graph/kestrel.json here to update it.
+GRAPH_SEEDS = {
+    "kestrel": ROOT_DIR / "docs" / "graphs" / "kestrel.json",
+}
+
 # --- Documents ---------------------------------------------------------------
 ALLOWED_EXTENSIONS = {".md", ".txt"}
 

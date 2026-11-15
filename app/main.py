@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Literal
-from app import documents, store, rag, graph, graph_retrieval, words, evaluation, llm
+from app import documents, store, rag, graph, graph_retrieval, words, evaluation, llm, explorer
 from app.config import WEB_DIR, CORPORA
 from app.schemas import (Settings, SettingsResponse, AskRequest, AskResponse, DocumentInfo, CorpusName,
                          EvalRequest, WordsQuestionRequest)
@@ -29,6 +29,7 @@ async def lifespan(app):
     # First start: copy the seed files of every corpus into data/corpora/ and index what is
     # not indexed yet, so the app is usable right away (takes ~20s for Crime and Punishment).
     documents.seed_all()
+    graph.seed_graphs()          # V4: the concept map works right after a clone, no build needed
     for corpus in CORPORA:
         documents.index_missing(corpus, load_settings())
     yield
@@ -83,6 +84,26 @@ def graph_info(corpus: CorpusName):
     data = graph.load(corpus)
     return {"corpus": corpus, "available": True, "built": data["built"], "settings": data["settings"],
             "nodes": len(data["nodes"]), "edges": len(data["edges"])}
+
+
+# --- Concept map (V4 Part B) -------------------------------------------------------
+# Read-only views of the concept graph for the Concept map tab: no LLM call. See app/explorer.py.
+# The concept id goes in the query string (?id=Team:data integrations): it holds ":", "#" and spaces.
+def explorer_call(function, *args):
+    try:
+        return function(*args)
+    except explorer.ExplorerError as e:
+        raise HTTPException(status_code=e.status_code, detail=str(e))
+
+
+@app.get("/api/concepts")
+def concept_list(corpus: CorpusName, q: str = ""):
+    return explorer_call(explorer.concepts, corpus, q)
+
+
+@app.get("/api/concept")
+def concept_detail(corpus: CorpusName, id: str):
+    return explorer_call(explorer.concept, corpus, id, load_settings())
 
 
 # --- Documents ---------------------------------------------------------------

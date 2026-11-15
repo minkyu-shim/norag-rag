@@ -3,29 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hybrid RAG — V3</title>
+  <title>Ask the documents — RAG V4</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>Hybrid RAG <span class="tag">V3</span></h1>
+    <h1>Ask the documents <span class="tag">V4</span></h1>
     <!-- Every tab works on the corpus chosen here (the API needs it on every call) -->
-    <label class="corpus-picker">Corpus
+    <label class="corpus-picker">Documents
       <select id="corpus"></select>
     </label>
+    <!-- V4 clean-up: the retrieval controls and the course tools are hidden until this is ticked -->
+    <label class="adv-toggle"><input type="checkbox" id="advanced-toggle"> Show technical details</label>
     <nav>
       <button class="tab active" data-tab="ask">Ask</button>
+      <button class="tab" data-tab="map">Concept map</button>
       <button class="tab" data-tab="documents">Documents</button>
-      <button class="tab" data-tab="words">Words</button>
-      <button class="tab" data-tab="eval">Evaluation</button>
-      <button class="tab" data-tab="settings">Settings</button>
+      <button class="tab adv" data-tab="words">Words</button>
+      <button class="tab adv" data-tab="eval">Evaluation</button>
+      <button class="tab adv" data-tab="settings">Settings</button>
     </nav>
   </header>
 
   <!-- Shown on every tab when the index does not match the current settings -->
   <div id="index-warning" class="banner warn hidden">
-    The index of this corpus is not built for the current chunk settings.
-    <button id="reindex-inline">Re-index now</button>
+    These documents are not ready for questions yet (the search index does not match the current settings).
+    <button id="reindex-inline">Prepare them now</button>
   </div>
 
   <main>
@@ -33,11 +36,11 @@
     <section id="tab-ask" class="panel">
       <form id="ask-form">
         <fieldset>
-          <legend>Search in</legend>
+          <legend>Search in these documents</legend>
           <div id="source-list" class="sources"></div>
         </fieldset>
         <!-- V3: the retrievers that are ON for this question; their results are fused with RRF -->
-        <fieldset>
+        <fieldset class="adv">
           <legend>Retrievers <small>(fused with RRF)</small></legend>
           <div id="retriever-list" class="sources">
             <label><input type="checkbox" value="dense" checked> dense (embeddings)</label>
@@ -54,18 +57,53 @@
         <div id="status-banner" class="banner"></div>
         <ul id="warnings" class="warnings"></ul>
         <div id="answer" class="answer"></div>
-        <p id="cost" class="meta"></p>
+        <p id="cost" class="meta adv"></p>
         <div id="citations" class="chips"></div>
 
         <!-- V3: shown when the graph retriever was on -->
-        <div id="graph-path" class="graph-path hidden">
+        <div id="graph-path" class="graph-path adv hidden">
           <h3>Graph path <small>(entities found in the question → edges followed → chunks)</small></h3>
           <p id="graph-entities" class="meta"></p>
           <ol id="graph-edges"></ol>
         </div>
 
-        <h3>Retrieved passages <small>(top-k after RRF fusion — found by: retriever #rank in its own list)</small></h3>
+        <h3>Passages the answer is based on <small class="adv">(top-k after RRF fusion — found by: retriever #rank in its own list)</small></h3>
         <ol id="retrieved" class="retrieved"></ol>
+      </div>
+    </section>
+
+    <!-- CONCEPT MAP (V4 Part B): explore the concept graph. Logic in explorer.js ----->
+    <section id="tab-map" class="panel hidden">
+      <p class="hint">The concepts found in the documents (teams, services, error codes, people, channels)
+        and how they are linked. Click a concept to see its links and the passage each link was read from.</p>
+      <div id="map-message" class="banner hidden"></div>
+      <div id="map-body" class="map-layout">
+        <div class="map-side">
+          <input type="search" id="map-search" placeholder="Find a concept…" aria-label="Find a concept">
+          <p id="map-count" class="meta"></p>
+          <div id="map-list" class="map-list"></div>
+        </div>
+        <div class="map-main">
+          <p id="map-empty" class="map-empty">Pick a concept in the list, for example <button type="button"
+            class="link" id="map-example">postroom</button>.</p>
+          <div id="map-concept" class="hidden">
+            <div class="map-head">
+              <button type="button" id="map-back" class="link hidden">← Back</button>
+              <h2 id="map-title"></h2>
+              <span id="map-type" class="type-pill"></span>
+            </div>
+            <svg id="map-svg" viewBox="-340 -160 680 320" role="group" aria-label="The concept and its neighbours"></svg>
+            <p id="map-cost" class="meta"></p>
+            <div class="row">
+              <button type="button" id="map-ask">Ask about this</button>
+              <button type="button" id="map-docs" class="secondary">Open the documents</button>
+            </div>
+            <h3>Links <small>(click a passage to read where the link comes from)</small></h3>
+            <ul id="map-links" class="map-links"></ul>
+            <h3 id="map-mentions-title">Documents that mention it</h3>
+            <div id="map-mentions"></div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -73,11 +111,11 @@
     <section id="tab-documents" class="panel hidden">
       <form id="upload-form" class="row">
         <input type="file" id="upload-file" accept=".md,.txt" required>
-        <button type="submit">Upload &amp; index</button>
+        <button type="submit">Add the document</button>
       </form>
       <div id="documents-message" class="banner hidden"></div>
       <table>
-        <thead><tr><th>Document</th><th>Size</th><th>Chunks (current settings)</th><th></th></tr></thead>
+        <thead><tr><th>Document</th><th>Size</th><th>Passages indexed</th><th></th></tr></thead>
         <tbody id="documents-table"></tbody>
       </table>
     </section>
@@ -213,5 +251,6 @@
   </aside>
 
   <script src="app.js"></script>
+  <script src="explorer.js"></script>
 </body>
 </html>

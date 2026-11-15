@@ -13,7 +13,7 @@
       "model_answer": "The full name of the main character in Crime and Punishment is Rodion Romanovich Raskolnikov.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "e02",
@@ -24,7 +24,7 @@
       "model_answer": "Raskolnikov lives in a tiny, cramped garret room located in a tenement building in St. Petersburg, which is often described as resembling a cupboard or a coffin.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "e03",
@@ -35,7 +35,8 @@
       "model_answer": "Raskolnikov pawns a small, silver cigarette case to the pawnbroker, Alyona Ivanovna, during his preliminary visit to her apartment.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": false,
+      "note": "Says a silver cigarette case (that is the fake pledge of the murder day). It was a silver watch."
     },
     {
       "id": "e04",
@@ -46,7 +47,7 @@
       "model_answer": "Marmeladov held the rank of a titular councillor, which is the ninth rank in the Table of Ranks.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "e05",
@@ -57,7 +58,8 @@
       "model_answer": "Lizaveta Ivanovna is the timid and exploited half-sister of the pawnbroker Alyona Ivanovna, who becomes an accidental victim when she walks in on Raskolnikov's murder of her sister.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true,
+      "note": "'Half-sister': the book says younger (half-)sister, accepted."
     },
     {
       "id": "e06",
@@ -68,7 +70,7 @@
       "model_answer": "Marfa Petrovna left Dounia a legacy of three thousand rubles in her will.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "e07",
@@ -79,7 +81,7 @@
       "model_answer": "Raskolnikov's article 'On Crime' was published in the Periodical Review (also known as the Weekly Review).",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "e08",
@@ -90,7 +92,7 @@
       "model_answer": "Raskolnikov is sentenced to eight years of penal servitude in Siberia for his crimes.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "e09",
@@ -101,7 +103,7 @@
       "model_answer": "Sonia reads the Gospel story of the raising of Lazarus to Raskolnikov.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "e10",
@@ -112,7 +114,7 @@
       "model_answer": "Marmeladov was fatally injured after being knocked down and trampled by a carriage while he was intoxicated and wandering in the street.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "h01",
@@ -123,7 +125,7 @@
       "model_answer": "Raskolnikov hid the stolen items under a large stone in a secluded courtyard, located near the gate of a building on a canal bank.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "h02",
@@ -134,7 +136,8 @@
       "model_answer": "The innocent house painter named Mikolay Dementiev claimed responsibility for the murders under pressure from the police.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true,
+      "note": "Mikolay Dementiev = Nikolay the painter."
     },
     {
       "id": "h03",
@@ -145,7 +148,7 @@
       "model_answer": "Svidrigaïlov commits suicide by shooting himself in the head with a revolver in a desolate area of Saint Petersburg.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "h04",
@@ -153,10 +156,10 @@
       "answerable": true,
       "question": "In the hero's childhood nightmare, what does the drunk peasant do to the animal?",
       "expected_answer": "Mikolka furiously whips (and later kills) his old mare",
-      "model_answer": null,
-      "model_says_known": null,
-      "error": "The LLM provider returned an error (HTTP 503).",
-      "known_without_rag": null
+      "model_answer": "In Raskolnikov's dream, the drunk peasant Mikolka brutally beats an old, frail mare to death with a crowbar while others laugh and cheer.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": true
     },
     {
       "id": "h05",
@@ -164,10 +167,10 @@
       "answerable": true,
       "question": "What exactly does the hero say when he finally gives himself up to the police?",
       "expected_answer": "It was I killed the old pawnbroker woman and her sister Lizaveta with an axe and robbed them",
-      "model_answer": null,
-      "model_says_known": null,
-      "error": "The LLM provider returned an error (HTTP 503).",
-      "known_without_rag": null
+      "model_answer": "Raskolnikov enters the police station and declares, \"It was I who killed the old pawnbroker woman and her sister Lizaveta with an axe and robbed them.\"",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": true
     },
     {
       "id": "h06",
@@ -175,10 +178,10 @@
       "answerable": true,
       "question": "How much money does his mother send him through the office?",
       "expected_answer": "Thirty-five roubles",
-      "model_answer": null,
-      "model_says_known": null,
-      "error": "The LLM provider returned an error (HTTP 503).",
-      "known_without_rag": null
+      "model_answer": "Raskolnikov's mother sends him thirty-five rubles through the office in her letter.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": true
     },
     {
       "id": "h07",
@@ -189,7 +192,7 @@
       "model_answer": "The hero's old comrade from university is Dmitri Prokofych Razumikhin.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "h08",
@@ -200,7 +203,7 @@
       "model_answer": "Sonia Marmeladova had to carry a yellow ticket, which served as a license and identification document for prostitutes in 19th-century Russia.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "n01",
@@ -211,7 +214,8 @@
       "model_answer": "There is no character named Denis Amselemovitch in Fyodor Dostoevsky's novel Crime and Punishment.",
       "model_says_known": false,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": false,
+      "note": "The needle: the model says the character does not exist."
     },
     {
       "id": "n02",
@@ -219,10 +223,11 @@
       "answerable": true,
       "question": "Which character might be a time traveller who used AI to get into the story?",
       "expected_answer": "Denis Amselemovitch",
-      "model_answer": null,
-      "model_says_known": null,
-      "error": "The LLM provider returned an error (HTTP 503).",
-      "known_without_rag": null
+      "model_answer": "There is no character in Fyodor Dostoevsky's 'Crime and Punishment' who is a time traveler or uses artificial intelligence, as the novel is a work of 19th-century realism.",
+      "model_says_known": false,
+      "error": null,
+      "known_without_rag": false,
+      "note": "The needle: the model says no such character."
     },
     {
       "id": "u01",
@@ -233,7 +238,8 @@
       "model_answer": "Raskolnikov does not have a phone number because the novel Crime and Punishment is set in 19th-century Saint Petersburg, long before the invention of the telephone.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true,
+      "note": "Says there is no phone in 19th-century Petersburg: same as 'not in the documents'."
     },
     {
       "id": "u02",
@@ -241,10 +247,11 @@
       "answerable": false,
       "question": "What is the capital of Australia?",
       "expected_answer": "Not in the documents.",
-      "model_answer": null,
-      "model_says_known": null,
-      "error": "The LLM provider returned an error (HTTP 503).",
-      "known_without_rag": null
+      "model_answer": "The capital of Australia is Canberra.",
+      "model_says_known": true,
+      "error": null,
+      "known_without_rag": false,
+      "note": "Answers Canberra: answering an off-corpus question anyway counts as wrong."
     },
     {
       "id": "u03",
@@ -255,7 +262,8 @@
       "model_answer": "There is no character named Denis Amselemovitch in the novel Crime and Punishment, so this information does not exist.",
       "model_says_known": false,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true,
+      "note": "Says there is no such character: no breakfast to report."
     },
     {
       "id": "u04",
@@ -266,7 +274,7 @@
       "model_answer": "Raskolnikov does not have a dog in the novel Crime and Punishment.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     },
     {
       "id": "u05",
@@ -277,7 +285,7 @@
       "model_answer": "Raskolnikov did not leave the army because he was never a soldier; he was a former university student who had to drop out due to extreme poverty.",
       "model_says_known": true,
       "error": null,
-      "known_without_rag": null
+      "known_without_rag": true
     }
   ]
 }
