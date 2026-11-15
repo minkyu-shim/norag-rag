@@ -7,7 +7,7 @@ from pathlib import Path
 # Make "import app..." work when running "python scripts/build_graph.py" from the repo root.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app import graph, llm  # noqa: E402
+from app import graph, llm, tracing  # noqa: E402
 from app.config import CORPORA, DEFAULT_CHUNK_SIZE, DEFAULT_OVERLAP_PERCENT, DEFAULT_TOP_K  # noqa: E402
 from app.evaluation import RESULTS_DIR  # noqa: E402
 from app.schemas import Settings  # noqa: E402
@@ -34,7 +34,13 @@ def main():
         raise SystemExit("Building the graph needs GOOGLE_API_KEY: create .env from .env.example.")
 
     settings = Settings(chunk_size=args.chunk_size, overlap_percent=args.overlap, top_k=DEFAULT_TOP_K)
-    report, built = graph.build(args.corpus, settings)
+    # V4: the whole build is ONE trace (one span per chunk, one child span per LLM call). Open it with
+    # GET /api/traces/<id> or list the latest with GET /api/traces.
+    with tracing.trace("index.graph", corpus=args.corpus, chunk_size=args.chunk_size,
+                       overlap_percent=args.overlap) as t:
+        report, built = graph.build(args.corpus, settings)
+        t.set(llm_calls=report["cost"]["llm_calls"], nodes=len(built["nodes"]), edges=len(built["edges"]))
+    print(f"  trace:     {t.id}")
 
     c, t, e = report["cost"], report["triples"], report["entities"]
     print(f"\nGraph of {args.corpus} (chunk {args.chunk_size}, overlap {args.overlap}%):")

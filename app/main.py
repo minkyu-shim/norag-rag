@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Literal
-from app import documents, store, rag, graph, graph_retrieval, words, evaluation, llm, explorer
+from app import documents, store, rag, graph, graph_retrieval, words, evaluation, llm, explorer, tracing
 from app.config import WEB_DIR, CORPORA
 from app.schemas import (Settings, SettingsResponse, AskRequest, AskResponse, DocumentInfo, CorpusName,
                          EvalRequest, WordsQuestionRequest)
@@ -28,6 +28,7 @@ from app.settings import load_settings, save_settings
 async def lifespan(app):
     # First start: copy the seed files of every corpus into data/corpora/ and index what is
     # not indexed yet, so the app is usable right away (takes ~20s for Crime and Punishment).
+    tracing.purge_old_traces()      # V4: retention (see TRACE_RETENTION_DAYS in app/config.py)
     documents.seed_all()
     graph.seed_graphs()          # V4: the concept map works right after a clone, no build needed
     for corpus in CORPORA:
@@ -147,6 +148,23 @@ def ask(request: AskRequest):
     # Even on an error status (429, 502...) the body is a full AskResponse,
     # so the UI can show the message AND the chunks that were retrieved.
     return JSONResponse(status_code=http_status, content=response.model_dump())
+
+
+# --- Traces (V4, Part A) -----------------------------------------------------------
+# One trace per question / indexing run, one span per step. The answer carries its trace_id:
+# the "Details" button of the UI opens GET /api/traces/{trace_id}. Stored in data/traces.sqlite, on this machine.
+@app.get("/api/traces")
+def list_traces(limit: int = 50):
+    return tracing.list_traces(min(max(limit, 1), 500))
+
+
+@app.get("/api/traces/{trace_id}")
+def get_trace(trace_id: str):
+    trace = tracing.get_trace(trace_id)
+    if trace is None:
+        # Traces are deleted after TRACE_RETENTION_DAYS days, or the data/ folder was wiped.
+        raise HTTPException(status_code=404, detail="This trace does not exist (any more).")
+    return trace
 
 
 # --- Evaluation (V2: also startable from the UI) ------------------------------------

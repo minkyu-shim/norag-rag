@@ -325,6 +325,7 @@ function showResult(r) {
 
   $("answer").textContent = r.answer || "";
   $("cost").textContent = costText(r);
+  showDetailsButton(r);     // V4: opens the trace of this answer (web/trace.js)
 
   // Citations: one chip per cited chunk. Clicking opens the chunk.
   $("citations").innerHTML = "";
