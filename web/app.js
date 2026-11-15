@@ -49,6 +49,12 @@ async function refresh() {
 }
 
 // --- Corpus ------------------------------------------------------------------
+// The API knows the corpora by short ids; the user sees what the documents are.
+const CORPUS_NAMES = {
+  kestrel: "Kestrel Analytics (help centre)",
+  crime: "Crime and Punishment (novel)",
+};
+
 async function loadCorpora() {
   const names = await api("GET", "/api/corpora");
   // Remember the last corpus in this browser only (a convenience: the server keeps no "current corpus").
@@ -56,7 +62,8 @@ async function loadCorpora() {
   try { saved = localStorage.getItem("corpus"); } catch { /* storage blocked: start on the first corpus */ }
   for (const name of names) {
     const option = document.createElement("option");
-    option.value = option.textContent = name;
+    option.value = name;
+    option.textContent = CORPUS_NAMES[name] || name;
     $("corpus").append(option);
   }
   if (names.includes(saved)) $("corpus").value = saved;
@@ -70,6 +77,22 @@ $("corpus").addEventListener("change", () => {
   ["documents-message", "settings-message"].forEach((id) => $(id).classList.add("hidden"));
   refresh().catch((e) => showError(e.message));
 });
+
+// --- Advanced toggle (V4 clean-up) ---------------------------------------------
+// A first-time user sees Ask, Concept map and Documents. The retrievers, scores, RRF ranks, graph path, cost
+// line and the course tools (Words, Evaluation, Settings) are marked class="adv" and shown only when ticked.
+function setAdvanced(on) {
+  document.body.classList.toggle("advanced", on);
+  $("advanced-toggle").checked = on;
+  // Back to Ask if the tab on screen just disappeared.
+  const active = document.querySelector(".tab.active");
+  if (!on && active && active.classList.contains("adv")) document.querySelector('.tab[data-tab="ask"]').click();
+}
+$("advanced-toggle").addEventListener("change", () => {
+  setAdvanced($("advanced-toggle").checked);
+  try { localStorage.setItem("advanced", $("advanced-toggle").checked ? "1" : "0"); } catch { /* not critical */ }
+});
+try { setAdvanced(localStorage.getItem("advanced") === "1"); } catch { setAdvanced(false); }
 
 // --- Tabs --------------------------------------------------------------------
 document.querySelectorAll(".tab").forEach((tab) => {
@@ -164,7 +187,7 @@ async function loadDocuments() {
     row.querySelector("button").addEventListener("click", () => deleteDocument(doc.name));
     $("documents-table").append(row);
   }
-  if (docs.length === 0) $("source-list").textContent = "No documents in this corpus yet: upload one in the Documents tab.";
+  if (docs.length === 0) $("source-list").textContent = "No documents here yet: add one in the Documents tab.";
 }
 
 async function deleteDocument(name) {
@@ -233,6 +256,15 @@ function scoresText(c) {
 }
 
 // --- Ask ---------------------------------------------------------------------
+// What each status means for the reader (the server's message, more precise, follows it).
+const STATUS_TITLE = {
+  answered: "Answer found in your documents",
+  not_found: "Not in your documents",
+  unverified: "Answer given, but it cites no passage: check it",
+  invalid_output: "The AI's reply could not be read",
+  provider_error: "The AI service did not answer",
+};
+
 const STATUS_KIND = {
   answered: "ok",
   not_found: "warn",
@@ -255,7 +287,7 @@ $("ask-form").addEventListener("submit", async (event) => {
   }
 
   $("ask-button").disabled = true;
-  $("ask-button").textContent = "Thinking…";
+  $("ask-button").textContent = "Searching the documents…";
   try {
     showResult(await api("POST", "/api/ask", { corpus: corpus(), question: $("question").value, sources, retrievers }));
   } catch (e) {
@@ -282,7 +314,7 @@ function showError(message) {
 
 function showResult(r) {
   $("result").classList.remove("hidden");
-  showBanner($("status-banner"), `${r.status.replace("_", " ")} — ${r.message}`, STATUS_KIND[r.status] || "");
+  showBanner($("status-banner"), `${STATUS_TITLE[r.status] || r.status} — ${r.message}`, STATUS_KIND[r.status] || "");
 
   $("warnings").innerHTML = "";
   for (const w of r.warnings) {
@@ -312,11 +344,11 @@ function showResult(r) {
   for (const c of r.retrieved) {
     const li = document.createElement("li");
     li.classList.toggle("cited", cited.has(c.id));
-    li.innerHTML = `<div><strong></strong> <span class="meta"></span></div>
-      <div class="found-by"></div><div class="preview"></div>`;
+    li.innerHTML = `<div><strong></strong> <span class="meta"></span> <span class="meta adv"></span></div>
+      <div class="found-by adv"></div><div class="preview"></div>`;
     li.querySelector("strong").textContent = `[${c.label}]${cited.has(c.id) ? " cited" : ""}`;
-    li.querySelector(".meta").textContent =
-      `${c.source} · lines ${c.start_line}–${c.end_line} · ${scoresText(c)}`;
+    li.querySelector(".meta").textContent = `${c.source} · lines ${c.start_line}–${c.end_line}`;
+    li.querySelector(".meta.adv").textContent = `· ${scoresText(c)}`;
     li.querySelector(".found-by").textContent = `found by: ${foundByText(c)}`;
     li.querySelector(".preview").textContent = c.text.replace(/\s+/g, " ");
     li.addEventListener("click", () => openChunk(c));
@@ -347,8 +379,10 @@ function showGraphPath(r) {
 // --- Chunk panel: opening a reference shows the chunk it points to -------------
 function openChunk(c) {
   $("chunk-title").textContent = `[${c.label}] ${c.source}`;
-  $("chunk-meta").textContent =
-    `lines ${c.start_line}–${c.end_line} · characters ${c.start}–${c.end} · ${scoresText(c)} · found by: ${foundByText(c)} · id ${c.id}`;
+  const technical = document.createElement("span");
+  technical.className = "adv";
+  technical.textContent = ` · characters ${c.start}–${c.end} · ${scoresText(c)} · found by: ${foundByText(c)} · id ${c.id}`;
+  $("chunk-meta").replaceChildren(`lines ${c.start_line}–${c.end_line}`, technical);
   $("chunk-text").textContent = c.text;
   $("chunk-panel").classList.remove("hidden");
 }

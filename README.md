@@ -64,8 +64,10 @@ Pick the document set at the top of the page, then:
   and how they are linked. Click a concept to see its links and the passage each one was read from, then
   **Ask about this** to ask a question about it.
 - **Documents**: add your own `.md` or `.txt` files, or delete one. A new file is searchable right away.
-- **Words**, **Evaluation**, **Settings**: tools for the course (word analytics, the evaluation of the
-  retrieval, the chunk settings). See *How it works* below.
+- **Show technical details** (top of the page): shows what is hidden for a first-time user. That covers
+  the retriever switches, the scores and ranks of each passage, the graph path and the cost of each answer.
+  It also adds the course tools: **Words** (word analytics), **Evaluation** (the evaluation of the retrieval)
+  and **Settings** (chunk size, overlap, top-k). See *How it works* below.
 
 ## Troubleshooting
 

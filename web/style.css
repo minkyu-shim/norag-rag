@@ -55,6 +55,9 @@ label:has(input:disabled) { color: var(--muted); }
 .sources { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 
 .hidden { display: none !important; }
+/* V4 clean-up: technical parts, shown only with "Show technical details" */
+body:not(.advanced) .adv { display: none !important; }
+.adv-toggle { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; cursor: pointer; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .hint, .meta { color: var(--muted); font-size: 13px; }
 
